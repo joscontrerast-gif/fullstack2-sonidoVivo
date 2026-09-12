@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Nuevo / Editar Producto</title>
+</head>
+<body>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr valign="top">
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <td width="200">
+        <table width="100%" cellpadding="8">
+          <tr>
+            <td>
+              <strong>&#9670; Company</strong>
+            </td>
+          </tr>
+      <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p><a href="adminReportes.html">&#128202; Reportes</a></p>
+                <p><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+              </nav>
+            </td>
+          </tr>
+
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>&nbsp;</td></tr>
+
+          <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p><a href="adminConfiguracion.html">&#9881; Settings</a></p>
+                <p><a href="adminPerfil.html">&#128100;+ Profile</a></p>
+                <p><a href="adminBuscar.html">&#128269; Search</a></p>
+                <p><a href="adminAyuda.html">&#10067; Help</a></p>
+              </nav>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              &#128100; <a href="adminPerfil.html">Profile</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- ===================== CONTENIDO ===================== -->
+      <td>
+        <table width="100%" cellpadding="15">
+          <tr>
+            <td>
+
+              <table width="100%">
+                <tr>
+                  <td><h1>Nuevo / Editar Producto</h1></td>
+                  <td align="right">&#128276;</td>
+                </tr>
+              </table>
+
+              <p><em>
+                Nota: esta misma página se usa tanto para crear un producto nuevo
+                como para editar uno existente. Al editar, los campos deberían
+                venir pre-cargados con los datos del producto seleccionado.
+              </em></p>
+
+              <hr>
+
+              <form action="#" method="post">
+
+                <p>
+                  <label for="sku">SKU</label><br>
+                  <input type="text" id="sku" name="sku" value="P0001" readonly>
+                </p>
+
+                <p>
+                  <label for="nombre">Nombre del producto</label><br>
+                  <input type="text" id="nombre" name="nombre" value="Producto #1">
+                </p>
+
+                <p>
+                  <label for="descripcion">Descripción</label><br>
+                  <textarea id="descripcion" name="descripcion" rows="4" cols="40">Pink lorem ipsum dolor sit amet, consectetur adipisicing elit.</textarea>
+                </p>
+
+                <p>
+                  <label for="categoria">Categoría</label><br>
+                  <select id="categoria" name="categoria">
+                    <option value="x" selected>Categoría X</option>
+                    <option value="y">Categoría Y</option>
+                    <option value="z">Categoría Z</option>
+                  </select>
+                </p>
+
+                <p>
+                  <label for="precio">Precio</label><br>
+                  <input type="number" id="precio" name="precio" value="8000">
+                </p>
+
+                <p>
+                  <label for="stock">Stock disponible</label><br>
+                  <input type="number" id="stock" name="stock" value="25">
+                </p>
+
+                <p>
+                  <label for="imagen">Imagen del producto</label><br>
+                  <input type="file" id="imagen" name="imagen">
+                </p>
+
+                <p>
+                  <button type="submit">Guardar</button>
+                  <a href="adminProductos.html">
+                    <button type="button">Cancelar</button>
+                  </a>
+                </p>
+
+              </form>
+
+              <hr>
+
+              <form action="#" method="post">
+                <p>
+                  <button type="submit" style="background-color:#c0392b; color:white;">
+                    Eliminar Producto
+                  </button>
+                </p>
+              </form>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+</body>
+</html>

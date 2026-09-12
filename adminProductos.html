@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Productos</title>
+</head>
+<body>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr valign="top">
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <td width="200">
+        <table width="100%" cellpadding="8">
+          <tr>
+            <td>
+              <strong>&#9670; Company</strong>
+            </td>
+          </tr>
+        <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p><a href="adminReportes.html">&#128202; Reportes</a></p>
+                <p><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+              </nav>
+            </td>
+          </tr>
+
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>&nbsp;</td></tr>
+
+          <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p><a href="adminConfiguracion.html">&#9881; Settings</a></p>
+                <p><a href="adminPerfil.html">&#128100;+ Profile</a></p>
+                <p><a href="adminBuscar.html">&#128269; Search</a></p>
+                <p><a href="adminAyuda.html">&#10067; Help</a></p>
+              </nav>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              &#128100; <a href="adminPerfil.html">Profile</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- ===================== CONTENIDO ===================== -->
+      <td>
+        <table width="100%" cellpadding="15">
+          <tr>
+            <td>
+
+              <!-- Título + botón nuevo producto + campana -->
+              <table width="100%">
+                <tr>
+                  <td>
+                    <h1>Productos</h1>
+                  </td>
+                  <td>
+                    <a href="adminProductoForm.html">
+                      <button type="button">NUEVO PRODUCTO</button>
+                    </a>
+                  </td>
+                  <td align="right">&#128276;</td>
+                </tr>
+              </table>
+
+              <p>
+                <select name="filtro-productos">
+                  <option>Todos los Productos</option>
+                  <option>Categoría X</option>
+                  <option>Categoría Y</option>
+                  <option>Categoría Z</option>
+                </select>
+              </p>
+
+              <!-- Tabla de productos -->
+              <table width="100%" border="1" cellpadding="6" cellspacing="0">
+                <tr>
+                  <th align="left">Fecha ingreso</th>
+                  <th align="left">SKU</th>
+                  <th align="left">Nombre</th>
+                  <th align="left">Categoría</th>
+                  <th align="left">Precio</th>
+                  <th align="left">Stock</th>
+                  <th align="left">Acciones</th>
+                </tr>
+                <tr>
+                  <td>2024-06-01</td>
+                  <td>P0001</td>
+                  <td>Producto #1</td>
+                  <td>Categoría X</td>
+                  <td>$8.000</td>
+                  <td>25</td>
+                  <td><a href="adminProductoForm.html">Editar</a></td>
+                </tr>
+                <tr>
+                  <td>2024-06-02</td>
+                  <td>P0002</td>
+                  <td>Producto #2</td>
+                  <td>Categoría Y</td>
+                  <td>$6.000</td>
+                  <td>10</td>
+                  <td><a href="adminProductoForm.html">Editar</a></td>
+                </tr>
+                <tr>
+                  <td>2024-06-02</td>
+                  <td>P0003</td>
+                  <td>Producto #3</td>
+                  <td>Categoría Z</td>
+                  <td>$10.000</td>
+                  <td>0</td>
+                  <td><a href="adminProductoForm.html">Editar</a></td>
+                </tr>
+                <tr>
+                  <td>2024-06-03</td>
+                  <td>P0004</td>
+                  <td>Producto #4</td>
+                  <td>Categoría X</td>
+                  <td>$7.500</td>
+                  <td>40</td>
+                  <td><a href="adminProductoForm.html">Editar</a></td>
+                </tr>
+                <tr>
+                  <td>2024-06-04</td>
+                  <td>P0005</td>
+                  <td>Producto #5</td>
+                  <td>Categoría Y</td>
+                  <td>$3.000</td>
+                  <td>60</td>
+                  <td><a href="adminProductoForm.html">Editar</a></td>
+                </tr>
+                <tr>
+                  <td>2024-06-05</td>
+                  <td>P0006</td>
+                  <td>Producto #6</td>
+                  <td>Categoría Z</td>
+                  <td>$23.000</td>
+                  <td>5</td>
+                  <td><a href="adminProductoForm.html">Editar</a></td>
+                </tr>
+              </table>
+
+              <!-- Paginación -->
+              <p align="center">
+                <a href="#">&laquo;</a>
+                <a href="#">&lsaquo;</a>
+                <a href="#">1</a>
+                <a href="#"><strong>2</strong></a>
+                <a href="#">3</a>
+                <a href="#">4</a>
+                <a href="#">5</a>
+                <a href="#">&rsaquo;</a>
+                <a href="#">&raquo;</a>
+              </p>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+</body>
+</html>

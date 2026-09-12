@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Nuevo / Editar Usuario</title>
+</head>
+<body>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr valign="top">
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <td width="200">
+        <table width="100%" cellpadding="8">
+          <tr>
+            <td>
+              <strong>&#9670; Company</strong>
+            </td>
+          </tr>
+        <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p><a href="adminReportes.html">&#128202; Reportes</a></p>
+                <p><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+              </nav>
+            </td>
+          </tr>
+
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>&nbsp;</td></tr>
+
+          <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p><a href="adminConfiguracion.html">&#9881; Settings</a></p>
+                <p><a href="adminPerfil.html">&#128100;+ Profile</a></p>
+                <p><a href="adminBuscar.html">&#128269; Search</a></p>
+                <p><a href="adminAyuda.html">&#10067; Help</a></p>
+              </nav>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              &#128100; <a href="adminPerfil.html">Profile</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- ===================== CONTENIDO ===================== -->
+      <td>
+        <table width="100%" cellpadding="15">
+          <tr>
+            <td>
+
+              <table width="100%">
+                <tr>
+                  <td><h1>Nuevo / Editar Empleado</h1></td>
+                  <td align="right">&#128276;</td>
+                </tr>
+              </table>
+
+              <p><em>
+                Nota: esta misma página se usa tanto para crear un empleado nuevo
+                como para editar uno existente. Al editar, los campos deberían
+                venir pre-cargados con los datos del empleado seleccionado.
+              </em></p>
+
+              <hr>
+
+              <form action="#" method="post">
+
+                <p>
+                  <label for="id">ID de Empleado</label><br>
+                  <input type="text" id="id" name="id" value="U0001" readonly>
+                </p>
+
+                <p>
+                  <label for="nombre">Nombre completo</label><br>
+                  <input type="text" id="nombre" name="nombre" value="Ana Torres">
+                </p>
+
+                <p>
+                  <label for="correo">Correo electrónico</label><br>
+                  <input type="email" id="correo" name="correo" value="ana.torres@correo.com">
+                </p>
+
+                <p>
+                  <label for="password">Contraseña</label><br>
+                  <input type="password" id="password" name="password" placeholder="Dejar en blanco para no cambiar">
+                </p>
+
+                <p>
+                  <label for="rol">Rol</label><br>
+                  <select id="rol" name="rol">
+                    <option value="empleado">Empleado</option>
+                    <option value="administrador">Administrador</option>
+                  </select>
+                </p>
+
+                <p>
+                  <label for="estado">Estado</label><br>
+                  <select id="estado" name="estado">
+                    <option value="activo" selected>Activo</option>
+                    <option value="inactivo">Inactivo</option>
+                    <option value="pendiente">Pendiente</option>
+                  </select>
+                </p>
+
+                <p>
+                  <button type="submit">Guardar</button>
+                  <a href="adminEmpleados.html">
+                    <button type="button">Cancelar</button>
+                  </a>
+                </p>
+
+              </form>
+
+              <hr>
+
+              <form action="#" method="post">
+                <p>
+                  <button type="submit" style="background-color:#c0392b; color:white;">
+                    Eliminar Usuario
+                  </button>
+                </p>
+              </form>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+</body>
+</html>

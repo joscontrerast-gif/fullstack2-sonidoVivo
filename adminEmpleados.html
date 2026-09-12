@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Empleados</title>
+</head>
+<body>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr valign="top">
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <td width="200">
+        <table width="100%" cellpadding="8">
+          <tr>
+            <td>
+              <strong>&#9670; Company</strong>
+            </td>
+          </tr>
+        <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p><a href="adminReportes.html">&#128202; Reportes</a></p>
+                <p><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+              </nav>
+            </td>
+          </tr>
+
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>&nbsp;</td></tr>
+          <tr><td>&nbsp;</td></tr>
+
+          <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p><a href="adminConfiguracion.html">&#9881; Settings</a></p>
+                <p><a href="adminPerfil.html">&#128100;+ Profile</a></p>
+                <p><a href="adminBuscar.html">&#128269; Search</a></p>
+                <p><a href="adminAyuda.html">&#10067; Help</a></p>
+              </nav>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              &#128100; <a href="adminPerfil.html">Profile</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- ===================== CONTENIDO ===================== -->
+      <td>
+        <table width="100%" cellpadding="15">
+          <tr>
+            <td>
+
+              <!-- Título + botón nuevo empleado + campana -->
+              <table width="100%">
+                <tr>
+                  <td>
+                    <h1>Empleados</h1>
+                  </td>
+                  <td>
+                    <a href="adminUsuarioForm.html">
+                      <button type="button">NUEVO EMPLEADO</button>
+                    </a>
+                  </td>
+                  <td align="right">&#128276;</td>
+                </tr>
+              </table>
+
+             <p>
+                <select name="filtro-empleados">
+                  <option>Todos los Empleados</option>
+                  <option>Administradores</option>
+                  <option>Empleados</option>
+                </select>
+              </p>
+
+              <!-- Tabla de Empleados -->
+              <table width="100%" border="1" cellpadding="6" cellspacing="0">
+                <tr>
+                  <th align="left">Fecha registro</th>
+                  <th align="left">ID</th>
+                  <th align="left">Nombre</th>
+                  <th align="left">Correo</th>
+                  <th align="left">Rol</th>
+                  <th align="left">Estado</th>
+                  <th align="left">Acciones</th>
+                </tr>
+                <tr>
+                  <td>2024-06-02</td>
+                  <td>U0002</td>
+                  <td>Bruno Salas</td>
+                  <td>bruno.salas@correo.com</td>
+                  <td>Empleado</td>
+                  <td>Activo</td>
+                  <td><a href="adminEmpleadoForm.html">Editar</a></td>
+                </tr>
+                <tr>
+                  <td>2024-06-03</td>
+                  <td>U0004</td>
+                  <td>Diego Retail</td>
+                  <td>diego.retail@correo.com</td>
+                  <td>Administrador</td>
+                  <td>Activo</td>
+                  <td><a href="adminEmpleadoForm.html">Editar</a></td>
+                </tr>
+                <tr>
+                  <td>2024-06-05</td>
+                  <td>U0006</td>
+                  <td>Felipe Toro</td>
+                  <td>felipe.toro@correo.com</td>
+                  <td>Empleado</td>
+                  <td>Pendiente</td>
+                  <td><a href="adminEmpleadoForm.html">Editar</a></td>
+                </tr>
+              </table>
+
+              <!-- Paginación -->
+              <p align="center">
+                <a href="#">&laquo;</a>
+                <a href="#">&lsaquo;</a>
+                <a href="#">1</a>
+                <a href="#">2</a>
+                <a href="#"><strong>3</strong></a>
+                <a href="#">4</a>
+                <a href="#">5</a>
+                <a href="#">&rsaquo;</a>
+                <a href="#">&raquo;</a>
+              </p>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+</body>
+</html>
