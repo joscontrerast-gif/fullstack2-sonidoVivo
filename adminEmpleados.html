@@ -17,7 +17,7 @@
               <strong>&#9670; Company</strong>
             </td>
           </tr>
-        <tr><td><hr></td></tr>
+          <tr><td><hr></td></tr>
           <tr>
             <td>
               <nav>
@@ -66,7 +66,7 @@
                     <h1>Empleados</h1>
                   </td>
                   <td>
-                    <a href="adminUsuarioForm.html">
+                    <a href="adminEmpleadoForm.html">
                       <button type="button">NUEVO EMPLEADO</button>
                     </a>
                   </td>
@@ -74,52 +74,31 @@
                 </tr>
               </table>
 
-             <p>
-                <select name="filtro-empleados">
-                  <option>Todos los Empleados</option>
-                  <option>Administradores</option>
-                  <option>Empleados</option>
+              <!-- Select con ID para escuchar eventos de filtro -->
+              <p>
+                <select id="filtroEmpleadosSelect" name="filtro-empleados">
+                  <option value="todos">Todos los Empleados</option>
+                  <option value="Administrador">Administradores</option>
+                  <option value="Empleado">Empleados / Vendedores</option>
                 </select>
               </p>
 
-              <!-- Tabla de Empleados -->
+              <!-- Tabla de Empleados con tbody identificado -->
               <table width="100%" border="1" cellpadding="6" cellspacing="0">
-                <tr>
-                  <th align="left">Fecha registro</th>
-                  <th align="left">ID</th>
-                  <th align="left">Nombre</th>
-                  <th align="left">Correo</th>
-                  <th align="left">Rol</th>
-                  <th align="left">Estado</th>
-                  <th align="left">Acciones</th>
-                </tr>
-                <tr>
-                  <td>2024-06-02</td>
-                  <td>U0002</td>
-                  <td>Bruno Salas</td>
-                  <td>bruno.salas@correo.com</td>
-                  <td>Empleado</td>
-                  <td>Activo</td>
-                  <td><a href="adminEmpleadoForm.html">Editar</a></td>
-                </tr>
-                <tr>
-                  <td>2024-06-03</td>
-                  <td>U0004</td>
-                  <td>Diego Retail</td>
-                  <td>diego.retail@correo.com</td>
-                  <td>Administrador</td>
-                  <td>Activo</td>
-                  <td><a href="adminEmpleadoForm.html">Editar</a></td>
-                </tr>
-                <tr>
-                  <td>2024-06-05</td>
-                  <td>U0006</td>
-                  <td>Felipe Toro</td>
-                  <td>felipe.toro@correo.com</td>
-                  <td>Empleado</td>
-                  <td>Pendiente</td>
-                  <td><a href="adminEmpleadoForm.html">Editar</a></td>
-                </tr>
+                <thead>
+                  <tr>
+                    <th align="left">Fecha registro</th>
+                    <th align="left">ID</th>
+                    <th align="left">Nombre</th>
+                    <th align="left">Correo</th>
+                    <th align="left">Rol</th>
+                    <th align="left">Estado</th>
+                    <th align="left">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaEmpleadosBody">
+                  <!-- Se generará dinámicamente -->
+                </tbody>
               </table>
 
               <!-- Paginación -->
@@ -143,5 +122,7 @@
     </tr>
   </table>
 
+  <!-- Script que maneja la tabla de empleados -->
+  <script src="js/listaEmpleados.js"></script>
 </body>
 </html>

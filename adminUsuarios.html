@@ -77,51 +77,21 @@
 
               <!-- Tabla de usuarios -->
               <table width="100%" border="1" cellpadding="6" cellspacing="0">
-                <tr>
-                  <th align="left">Fecha registro</th>
-                  <th align="left">ID</th>
-                  <th align="left">Nombre</th>
-                  <th align="left">Correo</th>
-                  <th align="left">Rol</th>
-                  <th align="left">Estado</th>
-                  <th align="left">Acciones</th>
-                </tr>
-                <tr>
-                  <td>2024-06-01</td>
-                  <td>U0001</td>
-                  <td>Ana Torres</td>
-                  <td>ana.torres@correo.com</td>
-                  <td>Cliente</td>
-                  <td>Activo</td>
-                  <td><a href="adminUsuarioForm.html">Editar</a></td>
-                </tr>
-                <tr>
-                  <td>2024-06-02</td>
-                  <td>U0003</td>
-                  <td>Carla Rojas</td>
-                  <td>carla.rojas@correo.com</td>
-                  <td>Cliente</td>
-                  <td>Inactivo</td>
-                  <td><a href="adminUsuarioForm.html">Editar</a></td>
-                </tr>
-                <tr>
-                  <td>2024-06-04</td>
-                  <td>U0005</td>
-                  <td>Elena Sepúlveda</td>
-                  <td>elena.sepulveda@correo.com</td>
-                  <td>Cliente</td>
-                  <td>Activo</td>
-                  <td><a href="adminUsuarioForm.html">Editar</a></td>
-                </tr>
-                <tr>
-                  <td>2024-06-06</td>
-                  <td>U0007</td>
-                  <td>Gabriela Soto</td>
-                  <td>gabriela.soto@correo.com</td>
-                  <td>Cliente</td>
-                  <td>Activo</td>
-                  <td><a href="adminUsuarioForm.html">Editar</a></td>
-                </tr>
+                <thead>
+                  <tr>
+                    <th align="left">Fecha registro</th>
+                    <th align="left">ID</th>
+                    <th align="left">Nombre</th>
+                    <th align="left">Correo</th>
+                    <th align="left">Rol</th>
+                    <th align="left">Estado</th>
+                    <th align="left">Acciones</th>
+                  </tr>
+                </thead>
+                <!-- ID añadido para controlar desde JS -->
+                <tbody id="tablaUsuariosBody">
+                  <!-- Se genera dinámicamente -->
+                </tbody>
               </table>
 
               <!-- Paginación -->
@@ -145,5 +115,7 @@
     </tr>
   </table>
 
+  <!-- Enlace a la lógica JS -->
+  <script src="js/listaUsuarios.js"></script>
 </body>
 </html>
