@@ -258,7 +258,10 @@ function inicializarValidacionRegistro() {
     );
 }
 
-//Contacto
+document.addEventListener("DOMContentLoaded", function () {
+  inicializarValidacionLogin();
+  inicializarValidacionRegistro();
+});
 function inicializarValidacionContacto() {
   const form = document.getElementById("formContacto");
   if (!form) return;
