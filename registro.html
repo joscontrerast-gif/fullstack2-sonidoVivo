@@ -20,12 +20,72 @@
     <main>
       <section id="registro">
         <h2>Crear cuenta</h2>
-        <form id="formRegistro">
-          <label for="nombre">Nombre completo</label>
-          <input type="text" id="nombre" name="nombre" required />
+        <form id="formRegistro" novalidate>
+          <label for="run">RUN (sin puntos ni guion)</label>
+          <input
+            type="text"
+            id="run"
+            name="run"
+            maxlength="9"
+            placeholder="Ej: 19011022K"
+            required
+          />
+          <span class="mensaje-error" id="error-run"></span>
+
+          <label for="nombre">Nombre</label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            maxlength="50"
+            required
+          />
+          <span class="mensaje-error" id="error-nombre"></span>
+
+          <label for="apellidos">Apellidos</label>
+          <input
+            type="text"
+            id="apellidos"
+            name="apellidos"
+            maxlength="100"
+            required
+          />
+          <span class="mensaje-error" id="error-apellidos"></span>
 
           <label for="correo">Correo</label>
-          <input type="email" id="correo" name="correo" required />
+          <input
+            type="email"
+            id="correo"
+            name="correo"
+            maxlength="100"
+            required
+          />
+          <span class="mensaje-error" id="error-correo"></span>
+
+          <label for="fechaNacimiento">Fecha de nacimiento (opcional)</label>
+          <input type="date" id="fechaNacimiento" name="fechaNacimiento" />
+
+          <label for="region">Región</label>
+          <select id="region" name="region" required>
+            <option value="">Selecciona una región</option>
+          </select>
+          <span class="mensaje-error" id="error-region"></span>
+
+          <label for="comuna">Comuna</label>
+          <select id="comuna" name="comuna" required disabled>
+            <option value="">Selecciona primero una región</option>
+          </select>
+          <span class="mensaje-error" id="error-comuna"></span>
+
+          <label for="direccion">Dirección</label>
+          <input
+            type="text"
+            id="direccion"
+            name="direccion"
+            maxlength="300"
+            required
+          />
+          <span class="mensaje-error" id="error-direccion"></span>
 
           <label for="contrasena">Contraseña</label>
           <input
@@ -34,7 +94,10 @@
             name="contrasena"
             required
             minlength="6"
+            maxlength="20"
           />
+          <span class="mensaje-error" id="error-contrasena"></span>
+
           <label for="confirmarContrasena">Confirmar contraseña</label>
           <input
             type="password"
@@ -42,10 +105,15 @@
             name="confirmarContrasena"
             required
             minlength="6"
+            maxlength="20"
           />
+          <span class="mensaje-error" id="error-confirmarContrasena"></span>
+
           <button type="submit" id="btnRegistro">Registrarse</button>
         </form>
       </section>
     </main>
+    <script src="js/regiones.js"></script>
+    <script src="js/validaciones.js"></script>
   </body>
 </html>
