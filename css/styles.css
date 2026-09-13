@@ -1,0 +1,17 @@
+/*Validacion de los mensajes de erroes*/
+.mensaje-error {
+  display: block;
+  color: #c0392b;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  min-height: 1rem;
+}
+
+.input-invalido {
+  border: 1px solid #c0392b;
+  background-color: #fdecea;
+}
+
+#registro select:disabled {
+  background-color: #f0f0f0;
+}
