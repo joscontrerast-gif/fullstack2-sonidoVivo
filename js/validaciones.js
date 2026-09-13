@@ -258,7 +258,39 @@ function inicializarValidacionRegistro() {
     );
 }
 
+//Contacto
+function inicializarValidacionContacto() {
+  const form = document.getElementById("formContacto");
+  if (!form) return;
+
+  form.addEventListener("submit", function (evento) {
+    evento.preventDefault();
+
+    const nombreValido = validarNoVacio("nombre", "El nombre", 100);
+    const correoValido = validarCorreo("correo", true);
+    const comentarioValido = validarNoVacio("comentario", "El comentario", 500);
+
+    if (nombreValido && correoValido && comentarioValido) {
+      alert("Tu mensaje fue enviado. Te responderemos a la brevedad.");
+      form.reset();
+    }
+  });
+
+  document
+    .getElementById("nombre")
+    .addEventListener("blur", () => validarNoVacio("nombre", "El nombre", 100));
+  document
+    .getElementById("correo")
+    .addEventListener("blur", () => validarCorreo("correo", true));
+  document
+    .getElementById("comentario")
+    .addEventListener("blur", () =>
+      validarNoVacio("comentario", "El comentario", 500),
+    );
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   inicializarValidacionLogin();
   inicializarValidacionRegistro();
+  inicializarValidacionContacto();
 });
