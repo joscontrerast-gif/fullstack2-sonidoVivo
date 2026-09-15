@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Nuevo / Editar Producto</title>
+    <script src="js/auth.js"></script>
+  <script>
+    protegerRuta(["Administrador", "Vendedor"]);
+  </script>
 </head>
 <body>
 
@@ -128,13 +132,6 @@
   </table>
 
   <!-- Carga de Scripts -->
-  <script src="js/auth.js"></script>
-
-  <script>
-    // Solo Administradores y Vendedores pueden ver esta interfaz
-    protegerRuta(["Administrador", "Vendedor"]);
-  </script>
-
   <script src="js/productos.js"></script>
   <script src="js/productoForm.js"></script>
 </body>

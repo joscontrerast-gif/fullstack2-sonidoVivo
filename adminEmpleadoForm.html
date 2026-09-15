@@ -8,6 +8,10 @@
     .input-invalido { border: 2px solid #e74c3c !important; }
     .mensaje-error { color: #e74c3c; font-size: 12px; display: block; margin-top: 2px; }
   </style>
+    <script src="js/auth.js"></script>
+  <script>
+    protegerRuta(["Administrador"]);
+  </script>
 </head>
 <body>
 
@@ -156,13 +160,6 @@
   </table>
 
   <!-- Carga del Script -->
-
-  <script src="js/auth.js"></script>
-
-  <script>
-    protegerRuta(["Administrador"]);
-  </script>
-  
   <script src="js/empleadoAdminForm.js"></script>
 </body>
 </html>

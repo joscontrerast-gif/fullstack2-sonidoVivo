@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin - Encargos / Órdenes</title>
+    <script src="js/auth.js"></script>
+  <script>
+    protegerRuta(["Administrador"]);
+  </script>
 </head>
 <body>
 
@@ -97,11 +101,6 @@
   </table>
 
   <!-- Scripts -->
-  <script src="js/auth.js"></script>
-  <script>
-    // Solo Administradores y Vendedores pueden ver esta interfaz
-    protegerRuta(["Administrador", "Vendedor"]);
-  </script>
   <script src="js/listaEncargos.js"></script>
 </body>
 </html>
