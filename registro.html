@@ -1,167 +1,119 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Tienda - Registro de Usuario</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro - Sonido Vivo</title>
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Sonido Vivo</h1>
+      <nav>
+        <a href="index.html">Inicio</a> |
+        <a href="productos.html">Productos</a> |
+        <a href="nosotros.html">Nosotros</a> | <a href="blogs.html">Blog</a> |
+        <a href="carrito.html">Carrito</a> |
+        <a href="login.html">Iniciar Seción</a>
+      </nav>
+    </header>
+    <main>
+      <section id="registro">
+        <h2>Crear cuenta</h2>
+        <form id="formRegistro" novalidate>
+          <label for="run">RUN (sin puntos ni guion)</label>
+          <input
+            type="text"
+            id="run"
+            name="run"
+            maxlength="9"
+            placeholder="Ej: 19011022K"
+            required
+          />
+          <span class="mensaje-error" id="error-run"></span>
 
-  <header>
-    <table width="100%">
-      <tr>
-        <td>
-          <strong>&#9632; Site Name</strong>
-        </td>
-        <td>
-          <nav>
-            <a href="index.html">Home</a> |
-            <a href="productos.html">Productos</a> |
-            <a href="nosotros.html">Nosotros</a> |
-            <a href="blogs.html">Blogs</a> |
-            <a href="contacto.html">Contacto</a>
-          </nav>
-        </td>
-        <td align="right">
-          &#128722; <a href="carrito.html">Cart (0)</a>
-        </td>
-      </tr>
-    </table>
-    <p align="right">
-      <a href="login.html">Iniciar sesión</a> |
-      <a href="registro.html">Registrar usuario</a>
-    </p>
-  </header>
+          <label for="nombre">Nombre</label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            maxlength="50"
+            required
+          />
+          <span class="mensaje-error" id="error-nombre"></span>
 
-  <main>
-    <h2>Registro de Usuario</h2>
+          <label for="apellidos">Apellidos</label>
+          <input
+            type="text"
+            id="apellidos"
+            name="apellidos"
+            maxlength="100"
+            required
+          />
+          <span class="mensaje-error" id="error-apellidos"></span>
 
-<form id="usuarioForm" novalidate>
-  
-  <!-- RUN -->
-  <div class="mb-3">
-    <label for="runInput" class="form-label">RUN</label>
-    <input 
-      type="text" 
-      class="form-control" 
-      id="runInput" 
-      placeholder="Ej: 19011022K"
-      maxlength="9" 
-      required
-    >
-  </div>
+          <label for="correo">Correo</label>
+          <input
+            type="email"
+            id="correo"
+            name="correo"
+            maxlength="100"
+            required
+          />
+          <span class="mensaje-error" id="error-correo"></span>
 
-  <!-- Nombre -->
-  <div class="mb-3">
-    <label for="nombreInput" class="form-label">Nombre</label>
-    <input 
-      type="text" 
-      class="form-control" 
-      id="nombreInput" 
-      maxlength="50" 
-      required
-    >
-  </div>
+          <label for="fechaNacimiento">Fecha de nacimiento (opcional)</label>
+          <input type="date" id="fechaNacimiento" name="fechaNacimiento" />
 
-  <!-- Apellidos -->
-  <div class="mb-3">
-    <label for="apellidosInput" class="form-label">Apellidos</label>
-    <input 
-      type="text" 
-      class="form-control" 
-      id="apellidosInput" 
-      maxlength="100" 
-      required
-    >
-  </div>
+          <label for="region">Región</label>
+          <select id="region" name="region" required>
+            <option value="">Selecciona una región</option>
+          </select>
+          <span class="mensaje-error" id="error-region"></span>
 
-  <!-- Correo -->
-  <div class="mb-3">
-    <label for="correoInput" class="form-label">Correo</label>
-    <input 
-      type="email" 
-      class="form-control" 
-      id="correoInput" 
-      placeholder="nombre@ejemplo.cl" 
-      maxlength="100" 
-      required
-    >
-  </div>
+          <label for="comuna">Comuna</label>
+          <select id="comuna" name="comuna" required disabled>
+            <option value="">Selecciona primero una región</option>
+          </select>
+          <span class="mensaje-error" id="error-comuna"></span>
 
-  <!-- Contraseña -->
-  <div class="mb-3">
-    <label for="passwordInput" class="form-label">Contraseña</label>
-    <input 
-      type="password" 
-      class="form-control" 
-      id="passwordInput" 
-      placeholder="Entre 4 y 10 caracteres"
-      minlength="4"
-      maxlength="10" 
-      required
-    >
-  </div>
+          <label for="direccion">Dirección</label>
+          <input
+            type="text"
+            id="direccion"
+            name="direccion"
+            maxlength="300"
+            required
+          />
+          <span class="mensaje-error" id="error-direccion"></span>
 
-  <!-- Fecha Nacimiento -->
-  <div class="mb-3">
-    <label for="fechaNacimientoInput" class="form-label">Fecha Nacimiento (opcional)</label>
-    <input 
-      type="date" 
-      class="form-control" 
-      id="fechaNacimientoInput"
-    >
-  </div>
+          <label for="contrasena">Contraseña</label>
+          <input
+            type="password"
+            id="contrasena"
+            name="contrasena"
+            required
+            minlength="6"
+            maxlength="20"
+          />
+          <span class="mensaje-error" id="error-contrasena"></span>
 
-  <!-- Tipo de Usuario -->
-  <div class="mb-3">
-    <label for="tipoUsuarioSelect" class="form-label">Tipo de Usuario</label>
-    <select class="form-select" id="tipoUsuarioSelect">
-      <option value="" selected disabled>Seleccione un tipo...</option>
-      <option value="Administrador">Administrador</option>
-      <option value="Cliente">Cliente</option>
-      <option value="Vendedor">Vendedor</option>
-    </select>
-  </div>
+          <label for="confirmarContrasena">Confirmar contraseña</label>
+          <input
+            type="password"
+            id="confirmarContrasena"
+            name="confirmarContrasena"
+            required
+            minlength="6"
+            maxlength="20"
+          />
+          <span class="mensaje-error" id="error-confirmarContrasena"></span>
 
-  <!-- Región -->
-  <div class="mb-3">
-    <label for="regionSelect" class="form-label">Región</label>
-    <select class="form-select" id="regionSelect">
-      <option value="" selected disabled>Seleccione una región...</option>
-    </select>
-  </div>
-
-  <!-- Comuna -->
-  <div class="mb-3">
-    <label for="comunaSelect" class="form-label">Comuna</label>
-    <select class="form-select" id="comunaSelect">
-      <option value="" selected disabled>Seleccione una comuna...</option>
-    </select>
-  </div>
-
-  <!-- Dirección -->
-  <div class="mb-3">
-    <label for="direccionInput" class="form-label">Dirección</label>
-    <input 
-      type="text" 
-      class="form-control" 
-      id="direccionInput" 
-      maxlength="300" 
-      required
-    >
-  </div>
-
-  <button type="submit" class="btn btn-primary">Guardar</button>
-</form>
-
-    <p>¿Ya tienes cuenta? <a href="login.html">Inicia sesión aquí</a></p>
-  </main>
-
-  <footer>
-    <p>&copy; 2026 Tienda</p>
-  </footer>
-  
-  <script src="js/registro.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+          <button type="submit" id="btnRegistro">Registrarse</button>
+        </form>
+      </section>
+    </main>
+    <script src="js/regiones.js"></script>
+    <script src="js/validaciones.js"></script>
+  </body>
 </html>

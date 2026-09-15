@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - Sonido Vivo</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Sonido Vivo</h1>
+
+        <nav>
+            <a href="index.html">Inicio</a> |
+            <a href="productos.html">Productos</a> |
+            <a href="nosotros.html">Nosotros</a> | <a href="blogs.html">Blog</a> |
+            <a href="carrito.html">Carrito</a> |
+            <a href="login.html">Iniciar Seción</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Catálogo de productos</h2>
+        <div class="filtros">
+    <input 
+        type="text" 
+        id="buscador" 
+        placeholder="Buscar producto..."
+    >
+
+    <div class="filtros">
+    <input 
+        type="text" 
+        id="buscador" 
+        placeholder="Buscar producto..."
+    >
+        <select id="filtro-categoria">
+            <option value="">Todas las categorías</option>
+            <option value="Guitarras Acústicas">Guitarras Acústicas</option>
+            <option value="Guitarras Eléctricas">Guitarras Eléctricas</option>
+            <option value="Bajos Eléctricos">Bajos Eléctricos</option>
+            <option value="Baterías">Baterías</option>
+            <option value="Teclados y Pianos">Teclados y Pianos</option>
+            <option value="Amplificadores">Amplificadores</option>
+            <option value="Micrófonos">Micrófonos</option>
+            <option value="Pedales de Efectos">Pedales de Efectos</option>
+            <option value="Accesorios">Accesorios</option>
+            <option value="Estudio y Grabación">Estudio y Grabación</option>
+        </select>
+    </div>
+
+        <section id="productos-container">
+            <!-- Los productos se cargarán aquí -->
+        </section>
+    </main>
+
+    <script src="js/productos.js"></script>
+    <script src="js/app.js"></script>
+
+</body>
+</html>

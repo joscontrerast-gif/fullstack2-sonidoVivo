@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Finalizar compra - Sonido Vivo</title>
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Sonido Vivo</h1>
+
+        <nav>
+            <a href="index.html">Inicio</a> |
+            <a href="productos.html">Productos</a> |
+            <a href="nosotros.html">Nosotros</a> | <a href="blogs.html">Blog</a> |
+            <a href="carrito.html">Carrito</a> |
+            <a href="login.html">Iniciar Seción</a>
+        </nav>
+    </header>
+
+
+    <main>
+
+        <h2>Finalizar compra</h2>
+
+        <form id="form-checkout">
+
+            <h3>Datos del cliente</h3>
+
+            <label for="nombre">
+                Nombre completo:
+            </label>
+
+            <input
+                type="text"
+                id="nombre"
+                name="nombre"
+                required
+            >
+
+
+            <label for="email">
+                Correo electrónico:
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                name="email"
+                required
+            >
+
+
+            <label for="direccion">
+                Dirección:
+            </label>
+
+            <input
+                type="text"
+                id="direccion"
+                name="direccion"
+                required
+            >
+
+
+            <h3>Tipo de entrega</h3>
+
+                <label for="entrega">
+                    Selecciona una opción:
+                </label>
+
+                <select id="entrega" name="entrega" required>
+
+                    <option value="">
+                        Seleccionar
+                    </option>
+
+                    <option value="despacho">
+                        Despacho a domicilio
+                    </option>
+
+                    <option value="retiro">
+                        Retiro en tienda
+                    </option>
+
+                </select>
+
+
+                <div id="direccion-container">
+
+                    <label for="direccion">
+                        Dirección:
+                    </label>
+
+                    <input
+                        type="text"
+                        id="direccion"
+                        name="direccion"
+                    >
+
+                </div>
+
+
+            <h3>Método de pago</h3>
+
+            <label for="pago">
+                Selecciona un método:
+            </label>
+
+            <select id="pago" name="pago" required>
+
+                <option value="">
+                    Seleccionar
+                </option>
+
+                <option value="tarjeta">
+                    Tarjeta de crédito
+                </option>
+
+                <option value="debito">
+                    Tarjeta de débito
+                </option>
+
+                <option value="transferencia">
+                    Transferencia bancaria
+                </option>
+
+            </select>
+
+
+            <button type="submit">
+                Confirmar pedido
+            </button>
+
+        </form>
+
+
+        <section id="mensaje-confirmacion">
+            <!-- El mensaje se mostrará mediante JavaScript -->
+        </section>
+
+    </main>
+
+
+    <script src="js/checkout.js"></script>
+
+</body>
+
+</html>
