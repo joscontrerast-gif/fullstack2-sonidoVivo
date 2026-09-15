@@ -45,7 +45,7 @@ function validarCorreo(inputId, requerido = true) {
   if (!DOMINIOS_PERMITIDOS.includes(dominio)) {
     mostrarError(
       inputId,
-      "Solo se aceptan correos @duoc.cl, @profesor.duoc.cl o @gmail.com",
+      "Solo se aceptan correos @duoc.cl, @profesor.duoc.cl o @gmail.com"
     );
     return false;
   }
@@ -66,7 +66,7 @@ function validarContrasena(inputId, min = 4, max = 10) {
   if (valor.length < min || valor.length > max) {
     mostrarError(
       inputId,
-      `La contraseña debe tener entre ${min} y ${max} caracteres.`,
+      `La contraseña debe tener entre ${min} y ${max} caracteres.`
     );
     return false;
   }
@@ -86,7 +86,7 @@ function validarNoVacio(inputId, nombreCampo, maxLength) {
   if (maxLength && valor.length > maxLength) {
     mostrarError(
       inputId,
-      `${nombreCampo} no puede superar los ${maxLength} caracteres.`,
+      `${nombreCampo} no puede superar los ${maxLength} caracteres.`
     );
     return false;
   }
@@ -128,7 +128,7 @@ function validarRun(inputId) {
   if (valor.length < 7 || valor.length > 9) {
     mostrarError(
       inputId,
-      "El RUN debe tener entre 7 y 9 caracteres, sin puntos ni guion.",
+      "El RUN debe tener entre 7 y 9 caracteres, sin puntos ni guion."
     );
     return false;
   }
@@ -139,7 +139,7 @@ function validarRun(inputId) {
   if (!/^\d+$/.test(cuerpo)) {
     mostrarError(
       inputId,
-      "El RUN solo debe contener números y el dígito verificador.",
+      "El RUN solo debe contener números y el dígito verificador."
     );
     return false;
   }
@@ -178,7 +178,7 @@ function validarSelect(inputId, nombreCampo) {
   return true;
 }
 
-// ==================== INICIALIZADORES Y LOCALSTORAGE ====================
+// ==================== INICIALIZADORES Y LOGICA DE LOGIN ====================
 
 // 1. INICIO DE SESIÓN CON REDIRECCIÓN POR ROL
 function inicializarValidacionLogin() {
@@ -202,18 +202,29 @@ function inicializarValidacionLogin() {
       );
 
       if (usuarioEncontrado) {
-        // Guardar el usuario en sesión activa
+        
+        // Estructura normalizada compatible con auth.js
+        const datosSesion = {
+          nombre: usuarioEncontrado.nombre,
+          correo: usuarioEncontrado.correo,
+          rol: usuarioEncontrado.tipoUsuario || "Cliente"
+        };
+
+        // Guardado dual de sesión activa
+        localStorage.setItem("usuarioSesion", JSON.stringify(datosSesion));
         localStorage.setItem("usuarioActivo", JSON.stringify(usuarioEncontrado));
         
         alert(`¡Bienvenido/a, ${usuarioEncontrado.nombre}!`);
 
-        // Redirección condicional según el rol (tipoUsuario)
-        const rol = usuarioEncontrado.tipoUsuario;
+        // Redirección condicional por rol
+        const rol = datosSesion.rol;
 
         if (rol === "Administrador") {
           window.location.href = "adminHome.html";
+        } else if (rol === "Vendedor") {
+          window.location.href = "adminProductos.html";
         } else {
-          window.location.href = "index.html"; // Vista normal para clientes
+          window.location.href = "index.html";
         }
 
       } else {
@@ -268,7 +279,6 @@ function inicializarValidacionRegistro() {
 
       const usuariosGuardados = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-      // Control de existencia previa por RUN o Correo
       const existeDuplicado = usuariosGuardados.some(
         (u) => u.run === runClean || u.correo.toLowerCase() === correoValue.toLowerCase()
       );
@@ -279,7 +289,6 @@ function inicializarValidacionRegistro() {
         return;
       }
 
-      // Estructura del nuevo registro
       const nuevoUsuario = {
         run: runClean,
         nombre: document.getElementById("nombre").value.trim(),
@@ -302,7 +311,6 @@ function inicializarValidacionRegistro() {
     }
   });
 
-  // Listeners de eventos blur y change
   const inputs = [
     { id: "run", fn: () => validarRun("run") },
     { id: "nombre", fn: () => validarNoVacio("nombre", "El nombre", 50) },
@@ -348,9 +356,20 @@ function inicializarValidacionContacto() {
   if (comentarioInput) comentarioInput.addEventListener("blur", () => validarNoVacio("comentario", "El comentario", 500));
 }
 
-// ==================== DISPARADOR PRINCIPAL ====================
+// ==================== DISPARADOR PRINCIPAL Y SEMILLA ====================
 document.addEventListener("DOMContentLoaded", function () {
-  inicializarValidacionLogin();
-  inicializarValidacionRegistro();
-  inicializarValidacionContacto();
+  // Crear usuarios demo automáticamente si localStorage está vacío
+  if (!localStorage.getItem("usuarios")) {
+    const usuariosDemo = [
+      { nombre: "Admin", correo: "admin@duoc.cl", password: "1234", tipoUsuario: "Administrador" },
+      { nombre: "Vendedor", correo: "vendedor@duoc.cl", password: "1234", tipoUsuario: "Vendedor" },
+      { nombre: "Cliente", correo: "cliente@duoc.cl", password: "1234", tipoUsuario: "Cliente" }
+    ];
+    localStorage.setItem("usuarios", JSON.stringify(usuariosDemo));
+  }
+
+  // Ejecutar inicializadores según la página activa
+  if (typeof inicializarValidacionLogin === "function") inicializarValidacionLogin();
+  if (typeof inicializarValidacionRegistro === "function") inicializarValidacionRegistro();
+  if (typeof inicializarValidacionContacto === "function") inicializarValidacionContacto();
 });

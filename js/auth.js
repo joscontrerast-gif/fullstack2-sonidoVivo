@@ -1,43 +1,64 @@
-// Obtener el usuario autenticado desde localStorage
+// Obtener el usuario autenticado (soporta ambas claves y estructuras)
 function obtenerUsuarioAutenticado() {
-  const usuarioJSON = localStorage.getItem("usuarioSesion");
+  const usuarioJSON = localStorage.getItem("usuarioSesion") || localStorage.getItem("usuarioActivo");
+  if (!usuarioJSON) return null;
+
   try {
-    return usuarioJSON ? JSON.parse(usuarioJSON) : null;
+    const usuario = JSON.parse(usuarioJSON);
+    
+    // Normalizar la propiedad del rol
+    const rolDetectado = usuario.rol || usuario.tipoUsuario || "Cliente";
+    
+    return {
+      ...usuario,
+      rol: rolDetectado.trim()
+    };
   } catch (e) {
     return null;
   }
 }
 
-// Proteger el acceso a las páginas según los roles permitidos
+// Proteger el acceso a las páginas evitando bucles
 function protegerRuta(rolesPermitidos = []) {
   const usuario = obtenerUsuarioAutenticado();
+  
+  // Extraer el nombre del archivo HTML actual
+  const path = window.location.pathname;
+  const paginaActual = path.substring(path.lastIndexOf('/') + 1) || "index.html";
 
-  // 1. Si no hay usuario en sesión -> Login
+  // 1. Si no hay sesión iniciada
   if (!usuario) {
-    window.location.href = "login.html";
-    return false;
+    if (paginaActual !== "login.html" && paginaActual !== "registro.html") {
+      window.location.href = "login.html";
+    }
+    return;
   }
 
-  // 2. Validar si el rol del usuario está permitido
-  if (rolesPermitidos.length > 0 && !rolesPermitidos.includes(usuario.rol)) {
-    // Redirigir según el rol real que tiene el usuario registrado
-    switch (usuario.rol) {
-      case "Cliente":
-        window.location.href = "index.html";
-        break;
-      case "Vendedor":
-        window.location.href = "adminProductos.html";
-        break;
-      default:
-        window.location.href = "index.html";
-        break;
+  // 2. Si hay roles especificados, verificar permisos
+  if (rolesPermitidos.length > 0) {
+    // Comparación insensible a mayúsculas/minúsculas
+    const tienePermiso = rolesPermitidos.some(
+      (r) => r.toLowerCase() === usuario.rol.toLowerCase()
+    );
+
+    if (!tienePermiso) {
+      let destino = "index.html";
+
+      if (usuario.rol.toLowerCase() === "vendedor") {
+        destino = "adminProductos.html";
+      } else if (usuario.rol.toLowerCase() === "administrador") {
+        destino = "adminHome.html";
+      }
+
+      // PREVENCIÓN DE BUCLE: Redirigir solo si la ruta de destino es diferente a la actual
+      if (paginaActual !== destino) {
+        window.location.href = destino;
+      }
     }
-    return false;
   }
-  return true;
 }
 
-// Ocultar elementos visuales del menú por rol
+// Adaptar la visibilidad del menú por rol
 function adaptarMenuPorRol() {
   const usuario = obtenerUsuarioAutenticado();
   if (!usuario) return;
@@ -45,14 +66,13 @@ function adaptarMenuPorRol() {
   const elementosProtegidos = document.querySelectorAll("[data-roles]");
 
   elementosProtegidos.forEach((el) => {
-    const rolesPermitidos = el.getAttribute("data-roles").split(",").map(r => r.trim());
-    if (!rolesPermitidos.includes(usuario.rol)) {
-      el.remove(); // Eliminamos el elemento del DOM en lugar de solo ocultarlo por CSS
+    const rolesPermitidos = el.getAttribute("data-roles").split(",").map(r => r.trim().toLowerCase());
+    if (!rolesPermitidos.includes(usuario.rol.toLowerCase())) {
+      el.style.display = "none";
     }
   });
 }
 
-// Ejecutar ocultamiento de menú al cargar el DOM
 document.addEventListener("DOMContentLoaded", () => {
   adaptarMenuPorRol();
 });

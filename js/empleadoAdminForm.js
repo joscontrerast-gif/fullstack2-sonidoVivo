@@ -213,26 +213,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const esModoEdicion = Boolean(runEditar);
 
   if (esModoEdicion) {
-    tituloFormulario.textContent = "Editar Empleado";
+    if (tituloFormulario) tituloFormulario.textContent = "Editar Empleado";
     const empleadoEncontrado = usuariosGuardados.find(
       (u) => u.run === runEditar.toUpperCase().replace(/\./g, "").replace(/-/g, "")
     );
 
     if (empleadoEncontrado) {
-      inputRun.value = empleadoEncontrado.run;
-      inputRun.readOnly = true;
-      inputNombre.value = empleadoEncontrado.nombre || "";
-      inputApellidos.value = empleadoEncontrado.apellidos || "";
-      inputCorreo.value = empleadoEncontrado.correo || "";
-      selectRol.value = empleadoEncontrado.rol || "Empleado";
-      selectRegion.value = empleadoEncontrado.region || "";
-      selectComuna.value = empleadoEncontrado.comuna || "";
-      inputDireccion.value = empleadoEncontrado.direccion || "";
+      if (inputRun) {
+        inputRun.value = empleadoEncontrado.run;
+        inputRun.readOnly = true;
+      }
+      if (inputNombre) inputNombre.value = empleadoEncontrado.nombre || "";
+      if (inputApellidos) inputApellidos.value = empleadoEncontrado.apellidos || "";
+      if (inputCorreo) inputCorreo.value = empleadoEncontrado.correo || "";
+      if (selectRol) selectRol.value = empleadoEncontrado.rol || empleadoEncontrado.tipoUsuario || "Vendedor";
+      if (selectRegion) selectRegion.value = empleadoEncontrado.region || "";
+      if (selectComuna) selectComuna.value = empleadoEncontrado.comuna || "";
+      if (inputDireccion) inputDireccion.value = empleadoEncontrado.direccion || "";
 
       if (seccionEliminar) seccionEliminar.style.display = "block";
     }
   } else {
-    tituloFormulario.textContent = "Nuevo Empleado";
+    if (tituloFormulario) tituloFormulario.textContent = "Nuevo Empleado";
   }
 
   // LISTENERS DE VALIDACIÓN
@@ -254,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (el) el.addEventListener(evt, fn);
   });
 
-  // SUBMIT
+  // SUBMIT FORMULARIO
   if (form) {
     form.addEventListener("submit", (evento) => {
       evento.preventDefault();
@@ -301,13 +303,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // Obtener el rol real del select (Vendedor / Administrador)
+      const rolSeleccionado = selectRol.value;
+
       const empleadoGuardar = {
         run: runClean,
         nombre: inputNombre.value.trim(),
         apellidos: inputApellidos.value.trim(),
         correo: correoValue,
-        tipoUsuario: "Empleado",
-        rol: selectRol.value, // Guarda 'Empleado' o 'Vendedor'
+        // Sincronización de campos: tipoUsuario toma el rol real seleccionado
+        tipoUsuario: (rolSeleccionado === "Empleado" || !rolSeleccionado) ? "Vendedor" : rolSeleccionado,
+        rol: rolSeleccionado,
         region: selectRegion.value,
         comuna: selectComuna.value,
         direccion: inputDireccion.value.trim(),
@@ -333,14 +339,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // CANCELAR
+  // BOTÓN CANCELAR
   if (btnCancelar) {
     btnCancelar.addEventListener("click", () => {
       window.location.href = "adminEmpleados.html";
     });
   }
 
-  // ELIMINAR EMPLEADO
+  // BOTÓN ELIMINAR EMPLEADO
   if (btnEliminar) {
     btnEliminar.addEventListener("click", () => {
       const runClean = inputRun.value.trim().toUpperCase().replace(/\./g, "").replace(/-/g, "");

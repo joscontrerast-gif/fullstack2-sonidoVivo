@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Inicio Sesión - Sonido Vivo</title>
     <link rel="stylesheet" href="css/styles.css" />
+    
     <script src="js/auth.js"></script>
-  <script>
-    protegerRuta(["Cliente", "Administrador"]);
-  </script>
+
+    <script>
+      protegerRuta(["Cliente", "Administrador", "Vendedor"]);
+    </script>
   </head>
   <body>
     <header>
@@ -16,14 +18,18 @@
       <nav>
         <a href="index.html">Inicio</a> |
         <a href="productos.html">Productos</a> |
-        <a href="nosotros.html">Nosotros</a> | <a href="blogs.html">Blog</a> |
+        <a href="nosotros.html">Nosotros</a> | 
+        <a href="blogs.html">Blog</a> |
         <a href="carrito.html">Carrito</a>
       </nav>
     </header>
+
     <main>
       <section id="iniSecion">
         <h2>Iniciar sesión</h2>
-        <form id="formInicioSecion" novalidate>
+        
+        <!-- Bloqueo nativo del submit GET con onsubmit -->
+        <form id="formInicioSecion" novalidate onsubmit="return false;">
           <label for="correo">Correo</label>
           <input
             type="email"
@@ -47,12 +53,16 @@
           <button type="submit" id="btnInicioSecion">Iniciar sesión</button>
         </form>
       </section>
+
       <section>
         <p>¿No posees un usuario?</p>
-        <a href="registro.html">Registrate</a>
+        <a href="registro.html">Regístrate</a>
       </section>
     </main>
+
     <footer></footer>
+
+    <!-- Solo se importa el archivo existente -->
     <script src="js/validaciones.js"></script>
   </body>
 </html>
