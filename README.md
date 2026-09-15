@@ -78,11 +78,3 @@ fullstack2-sonidoVivo-main/
 ├── productos.html              # Catálogo completo
 ├── registro.html               # Formulario de registro de clientes
 └── README.md                   # Documentación general
-
-🛡️ Resiliencia y Manejo Local de Datos
-
-    Validación de Formulario Dinámica (js/validaciones.js): Intercepción síncrona en cliente para asegurar la integridad de datos en formularios de contacto, registro, inicio de sesión y mantenedores CRUD.
-
-    Persistencia de Datos JSON / LocalStorage: Sincronización entre data/productos.json y el almacenamiento local del navegador para simular operaciones de inventario, adición al carrito y mantenimiento de sesiones.
-
-    Control de Operaciones CRUD: Mantenedores divididos por entidad (empleados, productos, usuarios, encargos) que previenen borrados accidentales o registros vacíos.
