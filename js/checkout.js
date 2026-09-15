@@ -38,7 +38,7 @@ formulario.addEventListener("submit", async function (event) {
     }
 
     try {
-        // 1. Obtener productos (Priorizar localStorage para mantener cambios de stock, si no leer del JSON)
+        // 1. Obtener productos 
         let productos = JSON.parse(localStorage.getItem(CLAVE_PRODUCTOS));
         if (!productos) {
             const respuesta = await fetch("data/productos.json");
@@ -69,7 +69,7 @@ formulario.addEventListener("submit", async function (event) {
 
             // Descontar stock local
             producto.stock -= item.cantidad;
-            // Sumar al total acumulado (si item.precio no viene en el carrito, se busca en el catálogo)
+            // Sumar al total acumulado
             totalPedido += (item.precio || producto.precio || 0) * item.cantidad;
         }
 
