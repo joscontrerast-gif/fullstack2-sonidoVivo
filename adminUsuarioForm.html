@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Nuevo / Editar Cliente</title>
+  <style>
+    .input-invalido { border: 2px solid #e74c3c !important; }
+    .mensaje-error { color: #e74c3c; font-size: 12px; display: block; margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr valign="top">
+
+<!-- ===================== SIDEBAR ===================== -->
+      <td width="200">
+        <table width="100%" cellpadding="8">
+          <tr>
+            <td>
+              <strong>&#9670; SONIDO VIVO</strong>
+            </td>
+          </tr>
+          <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p data-roles="Administrador"><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminEncargos.html">&#128221; Encargos</a></p>
+                <p data-roles="Administrador"><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p data-roles="Administrador"><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+              </nav>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- ===================== CONTENIDO ===================== -->
+      <td>
+        <table width="100%" cellpadding="15">
+          <tr>
+            <td>
+
+              <table width="100%">
+                <tr>
+                  <td><h1 id="tituloFormulario">Nuevo / Editar Cliente</h1></td>
+                  <td align="right">&#128276;</td>
+                </tr>
+              </table>
+
+              <p><em>Ingresa los datos para registrar o actualizar la información de un cliente.</em></p>
+              <hr>
+
+              <!-- Formulario de Registro / Edición de Cliente -->
+              <form id="formUsuarioAdmin" novalidate>
+
+                <p>
+                  <label for="run"><strong>RUN / Rut (*):</strong></label><br>
+                  <input type="text" id="run" placeholder="12345678K">
+                  <span id="error-run" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <label for="nombre"><strong>Nombre (*):</strong></label><br>
+                  <input type="text" id="nombre" placeholder="Ej: Ana">
+                  <span id="error-nombre" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <label for="apellidos"><strong>Apellidos (*):</strong></label><br>
+                  <input type="text" id="apellidos" placeholder="Ej: Torres Pérez">
+                  <span id="error-apellidos" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <label for="correo"><strong>Correo electrónico (*):</strong></label><br>
+                  <input type="email" id="correo" placeholder="ejemplo@duoc.cl">
+                  <span id="error-correo" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <label for="region"><strong>Región (*):</strong></label><br>
+                  <select id="region">
+                    <option value="">-- Seleccione --</option>
+                    <option value="Valparaíso">Valparaíso</option>
+                    <option value="Metropolitana">Metropolitana</option>
+                  </select>
+                  <span id="error-region" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <label for="comuna"><strong>Comuna (*):</strong></label><br>
+                  <select id="comuna">
+                    <option value="">-- Seleccione --</option>
+                    <option value="Valparaíso">Valparaíso</option>
+                    <option value="Viña del Mar">Viña del Mar</option>
+                    <option value="Santiago">Santiago</option>
+                  </select>
+                  <span id="error-comuna" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <label for="direccion"><strong>Dirección (*):</strong></label><br>
+                  <input type="text" id="direccion" size="40" placeholder="Ej: Av. España 123">
+                  <span id="error-direccion" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <label for="contrasena"><strong>Contraseña (*):</strong></label><br>
+                  <input type="password" id="contrasena" placeholder="Entre 6 y 20 caracteres">
+                  <span id="error-contrasena" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <label for="confirmarContrasena"><strong>Confirmar Contraseña (*):</strong></label><br>
+                  <input type="password" id="confirmarContrasena" placeholder="Repite la contraseña">
+                  <span id="error-confirmarContrasena" class="mensaje-error"></span>
+                </p>
+
+                <p>
+                  <button type="submit">Guardar Cliente</button>
+                  <button type="button" id="btnCancelar">Cancelar</button>
+                </p>
+
+              </form>
+
+              <!-- Zona de Eliminación (Solo en Modo Edición) -->
+              <div id="seccionEliminar" style="display: none;">
+                <hr>
+                <p>
+                  <button type="button" id="btnEliminarUsuario" style="background-color:#c0392b; color:white;">
+                    Eliminar Cliente
+                  </button>
+                </p>
+              </div>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+  <script src="js/auth.js"></script>
+
+  <script>
+    protegerRuta(["Administrador"]);
+  </script>
+  <!-- Carga de Scripts -->
+  <script src="js/usuarioAdminForm.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Dashboard</title>
+</head>
+<body>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr valign="top">
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <td width="200">
+        <table width="100%" cellpadding="8">
+          <tr>
+            <td>
+              <strong>&#9670; SONIDO VIVO</strong>
+            </td>
+          </tr>
+          <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p data-roles="Administrador"><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminEncargos.html">&#128221; Encargos</a></p>
+                <p data-roles="Administrador"><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p data-roles="Administrador"><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+              </nav>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- ===================== CONTENIDO ===================== -->
+      <td>
+        <table width="100%" cellpadding="15">
+          <tr>
+            <td>
+              <table width="100%">
+                <tr>
+                  <td><h1>&#161;HOLA Administrador!</h1></td>
+                  <td align="right">&#128276;</td>
+                </tr>
+              </table>
+
+              <hr>
+
+              <!-- Panel superior: resumen general de pedidos pendientes -->
+              <table width="100%" cellpadding="10">
+                <tr>
+                  <td>
+                    <h3>Resumen general</h3>
+                    <p><strong>Pedidos Pendientes por Procesar:</strong></p>
+                    
+                    <table width="100%" border="1" cellpadding="6" cellspacing="0">
+                      <thead>
+                        <tr>
+                          <th align="left">N° Orden</th>
+                          <th align="left">Fecha</th>
+                          <th align="left">Cliente</th>
+                          <th align="left">Total</th>
+                          <th align="left">Estado</th>
+                        </tr>
+                      </thead>
+                      <tbody id="tablaPendientesBody">
+                        <!-- Carga dinámica -->
+                      </tbody>
+                    </table>
+
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+  <!-- Scripts -->
+  <script src="js/auth.js"></script>
+  <script>
+    protegerRuta(["Administrador"]);
+  </script>
+  <script src="js/dashboardAdminHome.js"></script>
+</body>
+</html>

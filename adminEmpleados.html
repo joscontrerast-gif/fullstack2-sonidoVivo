@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Empleados</title>
+</head>
+<body>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr valign="top">
+
+<!-- ===================== SIDEBAR ===================== -->
+      <td width="200">
+        <table width="100%" cellpadding="8">
+          <tr>
+            <td>
+              <strong>&#9670; SONIDO VIVO</strong>
+            </td>
+          </tr>
+          <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p data-roles="Administrador"><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminEncargos.html">&#128221; Encargos</a></p>
+                <p data-roles="Administrador"><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p data-roles="Administrador"><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+              </nav>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- ===================== CONTENIDO ===================== -->
+      <td>
+        <table width="100%" cellpadding="15">
+          <tr>
+            <td>
+
+              <!-- Título + botón nuevo empleado + campana -->
+              <table width="100%">
+                <tr>
+                  <td>
+                    <h1>Empleados</h1>
+                  </td>
+                  <td>
+                    <a href="adminEmpleadoForm.html">
+                      <button type="button">NUEVO EMPLEADO</button>
+                    </a>
+                  </td>
+                  <td align="right">&#128276;</td>
+                </tr>
+              </table>
+
+              <!-- Select con ID para escuchar eventos de filtro -->
+              <p>
+                <select id="filtroEmpleadosSelect" name="filtro-empleados">
+                  <option value="todos">Todos los Empleados</option>
+                  <option value="Administrador">Administradores</option>
+                  <option value="Empleado">Empleados / Vendedores</option>
+                </select>
+              </p>
+
+              <!-- Tabla de Empleados con tbody identificado -->
+              <table width="100%" border="1" cellpadding="6" cellspacing="0">
+                <thead>
+                  <tr>
+                    <th align="left">Fecha registro</th>
+                    <th align="left">ID</th>
+                    <th align="left">Nombre</th>
+                    <th align="left">Correo</th>
+                    <th align="left">Rol</th>
+                    <th align="left">Estado</th>
+                    <th align="left">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaEmpleadosBody">
+                  <!-- Se generará dinámicamente -->
+                </tbody>
+              </table>
+
+              <!-- Paginación -->
+              <p align="center">
+                <a href="#">&laquo;</a>
+                <a href="#">&lsaquo;</a>
+                <a href="#">1</a>
+                <a href="#">2</a>
+                <a href="#"><strong>3</strong></a>
+                <a href="#">4</a>
+                <a href="#">5</a>
+                <a href="#">&rsaquo;</a>
+                <a href="#">&raquo;</a>
+              </p>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+  <script src="js/auth.js"></script>
+
+  <script>
+    protegerRuta(["Administrador"]);
+  </script>
+  <!-- Script que maneja la tabla de empleados -->
+  <script src="js/listaEmpleados.js"></script>
+</body>
+</html>
