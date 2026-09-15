@@ -78,3 +78,37 @@ fullstack2-sonidoVivo-main/
 ├── productos.html              # Catálogo completo
 ├── registro.html               # Formulario de registro de clientes
 └── README.md                   # Documentación general
+
+```
+## 🛡️ Resiliencia y Manejo Local de Datos
+
+* **Validación de Formulario Dinámica (`js/validaciones.js`):** Intercepción síncrona en cliente para asegurar la integridad de datos en formularios de contacto, registro, inicio de sesión y mantenedores CRUD.
+* **Persistencia de Datos JSON / LocalStorage:** Sincronización entre `data/productos.json` y el almacenamiento local del navegador para simular operaciones de inventario, adición al carrito y mantenimiento de sesiones.
+* **Control de Operaciones CRUD:** Mantenedores divididos por entidad (`empleados`, `productos`, `usuarios`, `encargos`) que previenen borrados accidentales o registros vacíos.
+
+---
+
+## 🚀 Ecosistema de Módulos Web
+
+| Archivo / Vista | Módulo | Descripción Detallada |
+| :--- | :--- | :--- |
+| `index.html` / `productos.html` | **Tienda y Catálogo** | Despliegue de productos desde `productos.json`, visualización por categorías y búsquedas con enlace a `producto-detalle.html`. |
+| `carrito.html` / `checkout.html` | **Carrito y Pagos** | Gestión de productos elegidos, cálculo de subtotales y formulario final con integración de selección territorial en `regiones.js`. |
+| `login.html` / `registro.html` | **Autenticación** | Gestión de credenciales, registro de nuevos clientes y control de acceso simulado con `auth.js`. |
+| `adminHome.html` | **Dashboard Admin** | Vista principal de control para administradores, centralizando el acceso a las operaciones del sistema. |
+| `adminProductos.html` / `adminProductoForm.html` | **CRUD Productos** | Mantenedor completo para agregar, editar, eliminar y actualizar el stock e imágenes del catálogo. |
+| `adminUsuarios.html` / `adminEmpleadoForm.html` | **CRUD Usuarios / Empleados** | Gestión del personal y clientes de la plataforma con formularios dedicados a la asignación de datos. |
+| `adminEncargos.html` | **Gestión de Encargos** | Módulo de revisión de solicitudes de despacho y pedidos generados por los clientes. |
+| `blogs.html` / `nosotros.html` / `contacto.html` | **Vistas Informativas** | Secciones institucionales, formulario de contacto y noticias relativas al ámbito musical. |
+
+---
+
+## 🛠️ Despliegue y Ejecución
+
+### Requisitos Previos
+* Navegador web moderno con soporte para HTML5, CSS3 y JavaScript ES6+ (Google Chrome, Mozilla Firefox, Microsoft Edge, Safari).
+* Editor de código (opcional, p. ej. VS Code) o extensión **Live Server**.
+
+### Paso 1: Clonar o Descargar el Proyecto
+```bash
+git clone [https://github.com/tu-usuario/fullstack2-sonidoVivo.git](https://github.com/tu-usuario/fullstack2-sonidoVivo.git)
