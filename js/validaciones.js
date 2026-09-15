@@ -1,4 +1,4 @@
-//InSesion
+// ==================== CONFIGURACIÓN Y ERRORES ====================
 const DOMINIOS_PERMITIDOS = ["duoc.cl", "profesor.duoc.cl", "gmail.com"];
 
 function mostrarError(inputId, mensaje) {
@@ -15,8 +15,11 @@ function limpiarError(inputId) {
   if (spanError) spanError.textContent = "";
 }
 
+// ==================== FUNCIONES DE VALIDACIÓN ====================
 function validarCorreo(inputId, requerido = true) {
-  const valor = document.getElementById(inputId).value.trim();
+  const input = document.getElementById(inputId);
+  if (!input) return true;
+  const valor = input.value.trim();
 
   if (valor === "") {
     if (requerido) {
@@ -52,7 +55,9 @@ function validarCorreo(inputId, requerido = true) {
 }
 
 function validarContrasena(inputId, min = 4, max = 10) {
-  const valor = document.getElementById(inputId).value;
+  const input = document.getElementById(inputId);
+  if (!input) return false;
+  const valor = input.value;
 
   if (valor === "") {
     mostrarError(inputId, "La contraseña es obligatoria.");
@@ -69,33 +74,11 @@ function validarContrasena(inputId, min = 4, max = 10) {
   return true;
 }
 
-function inicializarValidacionLogin() {
-  const form = document.getElementById("formInicioSecion");
-  if (!form) return;
-
-  form.addEventListener("submit", function (evento) {
-    evento.preventDefault();
-
-    const correoValido = validarCorreo("correo");
-    const contrasenaValida = validarContrasena("contrasena", 4, 10);
-
-    if (correoValido && contrasenaValida) {
-      alert("Inicio de sesión exitoso.");
-      form.reset();
-    }
-  });
-
-  document
-    .getElementById("correo")
-    .addEventListener("blur", () => validarCorreo("correo"));
-  document
-    .getElementById("contrasena")
-    .addEventListener("blur", () => validarContrasena("contrasena", 4, 10));
-}
-
-//Registro
 function validarNoVacio(inputId, nombreCampo, maxLength) {
-  const valor = document.getElementById(inputId).value.trim();
+  const input = document.getElementById(inputId);
+  if (!input) return false;
+  const valor = input.value.trim();
+
   if (valor === "") {
     mostrarError(inputId, `${nombreCampo} es obligatorio.`);
     return false;
@@ -112,8 +95,12 @@ function validarNoVacio(inputId, nombreCampo, maxLength) {
 }
 
 function validarConfirmarContrasena(inputIdOriginal, inputIdConfirmar) {
-  const original = document.getElementById(inputIdOriginal).value;
-  const confirmar = document.getElementById(inputIdConfirmar).value;
+  const inputOrig = document.getElementById(inputIdOriginal);
+  const inputConf = document.getElementById(inputIdConfirmar);
+  if (!inputOrig || !inputConf) return false;
+
+  const original = inputOrig.value;
+  const confirmar = inputConf.value;
 
   if (confirmar === "") {
     mostrarError(inputIdConfirmar, "Debes confirmar la contraseña.");
@@ -128,7 +115,10 @@ function validarConfirmarContrasena(inputIdOriginal, inputIdConfirmar) {
 }
 
 function validarRun(inputId) {
-  let valor = document.getElementById(inputId).value.trim().toUpperCase();
+  const input = document.getElementById(inputId);
+  if (!input) return false;
+
+  let valor = input.value.trim().toUpperCase();
   valor = valor.replace(/\./g, "").replace(/-/g, "");
 
   if (valor === "") {
@@ -154,7 +144,6 @@ function validarRun(inputId) {
     return false;
   }
 
-  // Cálculo del dígito verificador (módulo 11)
   let suma = 0;
   let multiplicador = 2;
   for (let i = cuerpo.length - 1; i >= 0; i--) {
@@ -177,7 +166,10 @@ function validarRun(inputId) {
 }
 
 function validarSelect(inputId, nombreCampo) {
-  const valor = document.getElementById(inputId).value;
+  const input = document.getElementById(inputId);
+  if (!input) return false;
+  const valor = input.value;
+
   if (valor === "" || valor === null) {
     mostrarError(inputId, `Debes seleccionar ${nombreCampo}.`);
     return false;
@@ -186,6 +178,58 @@ function validarSelect(inputId, nombreCampo) {
   return true;
 }
 
+// ==================== INICIALIZADORES Y LOCALSTORAGE ====================
+
+// 1. INICIO DE SESIÓN CON REDIRECCIÓN POR ROL
+function inicializarValidacionLogin() {
+  const form = document.getElementById("formInicioSecion");
+  if (!form) return;
+
+  form.addEventListener("submit", function (evento) {
+    evento.preventDefault();
+
+    const correoValido = validarCorreo("correo");
+    const contrasenaValida = validarContrasena("contrasena", 4, 10);
+
+    if (correoValido && contrasenaValida) {
+      const correoValue = document.getElementById("correo").value.trim().toLowerCase();
+      const contrasenaValue = document.getElementById("contrasena").value;
+
+      // Consulta de credenciales en localStorage
+      const usuariosGuardados = JSON.parse(localStorage.getItem("usuarios")) || [];
+      const usuarioEncontrado = usuariosGuardados.find(
+        (u) => u.correo.toLowerCase() === correoValue && u.password === contrasenaValue
+      );
+
+      if (usuarioEncontrado) {
+        // Guardar el usuario en sesión activa
+        localStorage.setItem("usuarioActivo", JSON.stringify(usuarioEncontrado));
+        
+        alert(`¡Bienvenido/a, ${usuarioEncontrado.nombre}!`);
+
+        // Redirección condicional según el rol (tipoUsuario)
+        const rol = usuarioEncontrado.tipoUsuario;
+
+        if (rol === "Administrador") {
+          window.location.href = "adminHome.html";
+        } else {
+          window.location.href = "index.html"; // Vista normal para clientes
+        }
+
+      } else {
+        mostrarError("correo", "Correo o contraseña incorrectos.");
+        mostrarError("contrasena", "");
+      }
+    }
+  });
+
+  const correoInput = document.getElementById("correo");
+  const passInput = document.getElementById("contrasena");
+  if (correoInput) correoInput.addEventListener("blur", () => validarCorreo("correo"));
+  if (passInput) passInput.addEventListener("blur", () => validarContrasena("contrasena", 4, 10));
+}
+
+// 2. REGISTRO DE USUARIOS
 function inicializarValidacionRegistro() {
   const form = document.getElementById("formRegistro");
   if (!form) return;
@@ -201,10 +245,10 @@ function inicializarValidacionRegistro() {
     const comunaValida = validarSelect("comuna", "una comuna");
     const direccionValida = validarNoVacio("direccion", "La dirección", 300);
     const contrasenaValida = validarContrasena("contrasena", 6, 20);
-    const confirmarValida = validarConfirmarContrasena(
-      "contrasena",
-      "confirmarContrasena",
-    );
+    const confirmarValida = validarConfirmarContrasena("contrasena", "confirmarContrasena");
+
+    const tipoUsuarioInput = document.getElementById("tipoUsuario");
+    const tipoUsuarioValido = tipoUsuarioInput ? validarSelect("tipoUsuario", "un tipo de usuario") : true;
 
     const formularioValido =
       runValido &&
@@ -215,53 +259,69 @@ function inicializarValidacionRegistro() {
       comunaValida &&
       direccionValida &&
       contrasenaValida &&
-      confirmarValida;
+      confirmarValida &&
+      tipoUsuarioValido;
 
     if (formularioValido) {
+      const runClean = document.getElementById("run").value.trim().toUpperCase().replace(/\./g, "").replace(/-/g, "");
+      const correoValue = document.getElementById("correo").value.trim();
+
+      const usuariosGuardados = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+      // Control de existencia previa por RUN o Correo
+      const existeDuplicado = usuariosGuardados.some(
+        (u) => u.run === runClean || u.correo.toLowerCase() === correoValue.toLowerCase()
+      );
+
+      if (existeDuplicado) {
+        mostrarError("run", "El RUN o Correo ya se encuentra registrado.");
+        mostrarError("correo", "El RUN o Correo ya se encuentra registrado.");
+        return;
+      }
+
+      // Estructura del nuevo registro
+      const nuevoUsuario = {
+        run: runClean,
+        nombre: document.getElementById("nombre").value.trim(),
+        apellidos: document.getElementById("apellidos").value.trim(),
+        correo: correoValue,
+        tipoUsuario: tipoUsuarioInput ? tipoUsuarioInput.value : "Cliente",
+        region: document.getElementById("region").value,
+        comuna: document.getElementById("comuna").value,
+        direccion: document.getElementById("direccion").value.trim(),
+        password: document.getElementById("contrasena").value,
+        fechaRegistro: new Date().toISOString().split("T")[0],
+        estado: "Activo"
+      };
+
+      usuariosGuardados.push(nuevoUsuario);
+      localStorage.setItem("usuarios", JSON.stringify(usuariosGuardados));
+
       alert("Registro exitoso.");
       form.reset();
     }
   });
 
-  document
-    .getElementById("run")
-    .addEventListener("blur", () => validarRun("run"));
-  document
-    .getElementById("nombre")
-    .addEventListener("blur", () => validarNoVacio("nombre", "El nombre", 50));
-  document
-    .getElementById("apellidos")
-    .addEventListener("blur", () =>
-      validarNoVacio("apellidos", "Los apellidos", 100),
-    );
-  document
-    .getElementById("correo")
-    .addEventListener("blur", () => validarCorreo("correo"));
-  document
-    .getElementById("region")
-    .addEventListener("change", () => validarSelect("region", "una región"));
-  document
-    .getElementById("comuna")
-    .addEventListener("change", () => validarSelect("comuna", "una comuna"));
-  document
-    .getElementById("direccion")
-    .addEventListener("blur", () =>
-      validarNoVacio("direccion", "La dirección", 300),
-    );
-  document
-    .getElementById("contrasena")
-    .addEventListener("blur", () => validarContrasena("contrasena", 6, 20));
-  document
-    .getElementById("confirmarContrasena")
-    .addEventListener("blur", () =>
-      validarConfirmarContrasena("contrasena", "confirmarContrasena"),
-    );
+  // Listeners de eventos blur y change
+  const inputs = [
+    { id: "run", fn: () => validarRun("run") },
+    { id: "nombre", fn: () => validarNoVacio("nombre", "El nombre", 50) },
+    { id: "apellidos", fn: () => validarNoVacio("apellidos", "Los apellidos", 100) },
+    { id: "correo", fn: () => validarCorreo("correo") },
+    { id: "region", evt: "change", fn: () => validarSelect("region", "una región") },
+    { id: "comuna", evt: "change", fn: () => validarSelect("comuna", "una comuna") },
+    { id: "direccion", fn: () => validarNoVacio("direccion", "La dirección", 300) },
+    { id: "contrasena", fn: () => validarContrasena("contrasena", 6, 20) },
+    { id: "confirmarContrasena", fn: () => validarConfirmarContrasena("contrasena", "confirmarContrasena") }
+  ];
+
+  inputs.forEach(({ id, evt = "blur", fn }) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener(evt, fn);
+  });
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-  inicializarValidacionLogin();
-  inicializarValidacionRegistro();
-});
+// 3. CONTACTO
 function inicializarValidacionContacto() {
   const form = document.getElementById("formContacto");
   if (!form) return;
@@ -279,19 +339,16 @@ function inicializarValidacionContacto() {
     }
   });
 
-  document
-    .getElementById("nombre")
-    .addEventListener("blur", () => validarNoVacio("nombre", "El nombre", 100));
-  document
-    .getElementById("correo")
-    .addEventListener("blur", () => validarCorreo("correo", true));
-  document
-    .getElementById("comentario")
-    .addEventListener("blur", () =>
-      validarNoVacio("comentario", "El comentario", 500),
-    );
+  const nombreInput = document.getElementById("nombre");
+  const correoInput = document.getElementById("correo");
+  const comentarioInput = document.getElementById("comentario");
+
+  if (nombreInput) nombreInput.addEventListener("blur", () => validarNoVacio("nombre", "El nombre", 100));
+  if (correoInput) correoInput.addEventListener("blur", () => validarCorreo("correo", true));
+  if (comentarioInput) comentarioInput.addEventListener("blur", () => validarNoVacio("comentario", "El comentario", 500));
 }
 
+// ==================== DISPARADOR PRINCIPAL ====================
 document.addEventListener("DOMContentLoaded", function () {
   inicializarValidacionLogin();
   inicializarValidacionRegistro();

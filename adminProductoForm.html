@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Nuevo / Editar Producto</title>
+</head>
+<body>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr valign="top">
+
+<!-- ===================== SIDEBAR ===================== -->
+      <td width="200">
+        <table width="100%" cellpadding="8">
+          <tr>
+            <td>
+              <strong>&#9670; SONIDO VIVO</strong>
+            </td>
+          </tr>
+          <tr><td><hr></td></tr>
+          <tr>
+            <td>
+              <nav>
+                <p data-roles="Administrador"><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminEncargos.html">&#128221; Encargos</a></p>
+                <p data-roles="Administrador"><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p data-roles="Administrador"><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+              </nav>
+            </td>
+          </tr>
+        </table>
+      </td>
+
+      <!-- ===================== CONTENIDO ===================== -->
+      <td>
+        <table width="100%" cellpadding="15">
+          <tr>
+            <td>
+
+              <table width="100%">
+                <tr>
+                  <td>
+                    <h1 id="tituloFormulario">Nuevo / Editar Producto</h1>
+                  </td>
+                  <td align="right">&#128276;</td>
+                </tr>
+              </table>
+
+              <p>
+                <em>Nota: esta misma página se usa tanto para crear un producto nuevo como para editar uno existente.</em>
+              </p>
+              <hr>
+
+              <!-- Formulario de Producto -->
+              <form id="formProducto">
+                <p>
+                  <label for="sku"><strong>Código Producto (*):</strong></label><br>
+                  <input type="text" id="sku" required minlength="3" placeholder="Ej: GA001">
+                </p>
+
+                <p>
+                  <label for="nombre"><strong>Nombre (*):</strong></label><br>
+                  <input type="text" id="nombre" size="40" required maxlength="100" placeholder="Ej: Guitarra Acústica Folk">
+                </p>
+
+                <p>
+                  <label for="marca"><strong>Marca:</strong></label><br>
+                  <input type="text" id="marca" size="30" placeholder="Ej: Yamaha">
+                </p>
+
+                <p>
+                  <label for="modelo"><strong>Modelo:</strong></label><br>
+                  <input type="text" id="modelo" size="30" placeholder="Ej: F310">
+                </p>
+
+                <p>
+                  <label for="descripcion"><strong>Descripción:</strong></label><br>
+                  <textarea id="descripcion" rows="5" cols="50" maxlength="500" placeholder="Opcional. Máx 500 caracteres..."></textarea>
+                </p>
+
+                <p>
+                  <label for="categoria"><strong>Categoría (*):</strong></label><br>
+                  <select id="categoria" required>
+                    <option value="">-- Seleccionar Categoría --</option>
+                    <option value="Guitarras Acústicas">Guitarras Acústicas</option>
+                    <option value="Guitarras Eléctricas">Guitarras Eléctricas</option>
+                    <option value="Bajos">Bajos</option>
+                    <option value="Teclados">Teclados</option>
+                    <option value="Baterías y Percusión">Baterías y Percusión</option>
+                    <option value="Accesorios">Accesorios</option>
+                  </select>
+                </p>
+
+                <p>
+                  <label for="precio"><strong>Precio (*):</strong></label><br>
+                  <input type="number" id="precio" required min="0" step="any" placeholder="0 (Gratis) o superior">
+                </p>
+
+                <p>
+                  <label for="stock"><strong>Stock (*):</strong></label><br>
+                  <input type="number" id="stock" required min="0" step="1" placeholder="Ej: 10">
+                </p>
+
+                <p>
+                  <label for="stockCritico"><strong>Stock Crítico:</strong></label><br>
+                  <input type="number" id="stockCritico" min="0" step="1" placeholder="Ej: 2 (Opcional)">
+                </p>
+
+                <p>
+                  <label for="imagen"><strong>Imagen del producto:</strong></label><br>
+                  <input type="file" id="imagen" accept="image/*">
+                </p>
+
+                <p>
+                  <button type="submit">Guardar</button>
+                  <button type="button" onclick="window.location.href='adminProductos.html'">Cancelar</button>
+                </p>
+              </form>
+
+            </td>
+          </tr>
+        </table>
+      </td>
+
+    </tr>
+  </table>
+
+  <!-- Carga de Scripts -->
+  <script src="js/auth.js"></script>
+
+  <script>
+    // Solo Administradores y Vendedores pueden ver esta interfaz
+    protegerRuta(["Administrador", "Vendedor"]);
+  </script>
+
+  <script src="js/productos.js"></script>
+  <script src="js/productoForm.js"></script>
+</body>
+</html>
