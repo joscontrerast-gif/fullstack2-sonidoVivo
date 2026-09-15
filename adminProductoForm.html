@@ -60,7 +60,6 @@
           <tr>
             <td>
 
-              <!-- Encabezado -->
               <table width="100%">
                 <tr>
                   <td>
@@ -71,20 +70,20 @@
               </table>
 
               <p>
-                <em>Nota: esta misma página se usa tanto para crear un producto nuevo como para editar uno existente. Al editar, los campos deberían venir pre-cargados con los datos del producto seleccionado.</em>
+                <em>Nota: esta misma página se usa tanto para crear un producto nuevo como para editar uno existente.</em>
               </p>
               <hr>
 
               <!-- Formulario de Producto -->
               <form id="formProducto">
                 <p>
-                  <label for="sku"><strong>SKU / Código:</strong></label><br>
-                  <input type="text" id="sku" required placeholder="Ej: GA001">
+                  <label for="sku"><strong>Código Producto (*):</strong></label><br>
+                  <input type="text" id="sku" required minlength="3" placeholder="Ej: GA001">
                 </p>
 
                 <p>
-                  <label for="nombre"><strong>Nombre del producto:</strong></label><br>
-                  <input type="text" id="nombre" size="40" required placeholder="Ej: Guitarra Acústica Folk">
+                  <label for="nombre"><strong>Nombre (*):</strong></label><br>
+                  <input type="text" id="nombre" size="40" required maxlength="100" placeholder="Ej: Guitarra Acústica Folk">
                 </p>
 
                 <p>
@@ -99,12 +98,13 @@
 
                 <p>
                   <label for="descripcion"><strong>Descripción:</strong></label><br>
-                  <textarea id="descripcion" rows="5" cols="50" placeholder="Descripción del producto..."></textarea>
+                  <textarea id="descripcion" rows="5" cols="50" maxlength="500" placeholder="Opcional. Máx 500 caracteres..."></textarea>
                 </p>
 
                 <p>
-                  <label for="categoria"><strong>Categoría:</strong></label><br>
-                  <select id="categoria">
+                  <label for="categoria"><strong>Categoría (*):</strong></label><br>
+                  <select id="categoria" required>
+                    <option value="">-- Seleccionar Categoría --</option>
                     <option value="Guitarras Acústicas">Guitarras Acústicas</option>
                     <option value="Guitarras Eléctricas">Guitarras Eléctricas</option>
                     <option value="Bajos">Bajos</option>
@@ -115,13 +115,18 @@
                 </p>
 
                 <p>
-                  <label for="precio"><strong>Precio ($ CLP):</strong></label><br>
-                  <input type="number" id="precio" required min="0" placeholder="129990">
+                  <label for="precio"><strong>Precio (*):</strong></label><br>
+                  <input type="number" id="precio" required min="0" step="any" placeholder="0 (Gratis) o superior">
                 </p>
 
                 <p>
-                  <label for="stock"><strong>Stock disponible:</strong></label><br>
-                  <input type="number" id="stock" required min="0" placeholder="10">
+                  <label for="stock"><strong>Stock (*):</strong></label><br>
+                  <input type="number" id="stock" required min="0" step="1" placeholder="Ej: 10">
+                </p>
+
+                <p>
+                  <label for="stockCritico"><strong>Stock Crítico:</strong></label><br>
+                  <input type="number" id="stockCritico" min="0" step="1" placeholder="Ej: 2 (Opcional)">
                 </p>
 
                 <p>
