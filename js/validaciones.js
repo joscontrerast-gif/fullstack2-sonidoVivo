@@ -180,7 +180,7 @@ function validarSelect(inputId, nombreCampo) {
 
 // ==================== INICIALIZADORES Y LOCALSTORAGE ====================
 
-// 1. INICIO DE SESIÓN
+// 1. INICIO DE SESIÓN CON REDIRECCIÓN POR ROL
 function inicializarValidacionLogin() {
   const form = document.getElementById("formInicioSecion");
   if (!form) return;
@@ -202,9 +202,20 @@ function inicializarValidacionLogin() {
       );
 
       if (usuarioEncontrado) {
+        // Guardar el usuario en sesión activa
         localStorage.setItem("usuarioActivo", JSON.stringify(usuarioEncontrado));
+        
         alert(`¡Bienvenido/a, ${usuarioEncontrado.nombre}!`);
-        window.location.href = "index.html";
+
+        // Redirección condicional según el rol (tipoUsuario)
+        const rol = usuarioEncontrado.tipoUsuario;
+
+        if (rol === "Administrador") {
+          window.location.href = "adminHome.html";
+        } else {
+          window.location.href = "index.html"; // Vista normal para clientes
+        }
+
       } else {
         mostrarError("correo", "Correo o contraseña incorrectos.");
         mostrarError("contrasena", "");

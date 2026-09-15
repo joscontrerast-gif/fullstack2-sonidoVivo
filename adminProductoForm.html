@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Nuevo / Editar Producto</title>
 </head>
 <body>
@@ -17,7 +18,7 @@
               <strong>&#9670; Company</strong>
             </td>
           </tr>
-      <tr><td><hr></td></tr>
+          <tr><td><hr></td></tr>
           <tr>
             <td>
               <nav>
@@ -59,78 +60,78 @@
           <tr>
             <td>
 
+              <!-- Encabezado -->
               <table width="100%">
                 <tr>
-                  <td><h1>Nuevo / Editar Producto</h1></td>
+                  <td>
+                    <h1 id="tituloFormulario">Nuevo / Editar Producto</h1>
+                  </td>
                   <td align="right">&#128276;</td>
                 </tr>
               </table>
 
-              <p><em>
-                Nota: esta misma página se usa tanto para crear un producto nuevo
-                como para editar uno existente. Al editar, los campos deberían
-                venir pre-cargados con los datos del producto seleccionado.
-              </em></p>
-
+              <p>
+                <em>Nota: esta misma página se usa tanto para crear un producto nuevo como para editar uno existente. Al editar, los campos deberían venir pre-cargados con los datos del producto seleccionado.</em>
+              </p>
               <hr>
 
-              <form action="#" method="post">
-
+              <!-- Formulario de Producto -->
+              <form id="formProducto">
                 <p>
-                  <label for="sku">SKU</label><br>
-                  <input type="text" id="sku" name="sku" value="P0001" readonly>
+                  <label for="sku"><strong>SKU / Código:</strong></label><br>
+                  <input type="text" id="sku" required placeholder="Ej: GA001">
                 </p>
 
                 <p>
-                  <label for="nombre">Nombre del producto</label><br>
-                  <input type="text" id="nombre" name="nombre" value="Producto #1">
+                  <label for="nombre"><strong>Nombre del producto:</strong></label><br>
+                  <input type="text" id="nombre" size="40" required placeholder="Ej: Guitarra Acústica Folk">
                 </p>
 
                 <p>
-                  <label for="descripcion">Descripción</label><br>
-                  <textarea id="descripcion" name="descripcion" rows="4" cols="40">Pink lorem ipsum dolor sit amet, consectetur adipisicing elit.</textarea>
+                  <label for="marca"><strong>Marca:</strong></label><br>
+                  <input type="text" id="marca" size="30" placeholder="Ej: Yamaha">
                 </p>
 
                 <p>
-                  <label for="categoria">Categoría</label><br>
-                  <select id="categoria" name="categoria">
-                    <option value="x" selected>Categoría X</option>
-                    <option value="y">Categoría Y</option>
-                    <option value="z">Categoría Z</option>
+                  <label for="modelo"><strong>Modelo:</strong></label><br>
+                  <input type="text" id="modelo" size="30" placeholder="Ej: F310">
+                </p>
+
+                <p>
+                  <label for="descripcion"><strong>Descripción:</strong></label><br>
+                  <textarea id="descripcion" rows="5" cols="50" placeholder="Descripción del producto..."></textarea>
+                </p>
+
+                <p>
+                  <label for="categoria"><strong>Categoría:</strong></label><br>
+                  <select id="categoria">
+                    <option value="Guitarras Acústicas">Guitarras Acústicas</option>
+                    <option value="Guitarras Eléctricas">Guitarras Eléctricas</option>
+                    <option value="Bajos">Bajos</option>
+                    <option value="Teclados">Teclados</option>
+                    <option value="Baterías y Percusión">Baterías y Percusión</option>
+                    <option value="Accesorios">Accesorios</option>
                   </select>
                 </p>
 
                 <p>
-                  <label for="precio">Precio</label><br>
-                  <input type="number" id="precio" name="precio" value="8000">
+                  <label for="precio"><strong>Precio ($ CLP):</strong></label><br>
+                  <input type="number" id="precio" required min="0" placeholder="129990">
                 </p>
 
                 <p>
-                  <label for="stock">Stock disponible</label><br>
-                  <input type="number" id="stock" name="stock" value="25">
+                  <label for="stock"><strong>Stock disponible:</strong></label><br>
+                  <input type="number" id="stock" required min="0" placeholder="10">
                 </p>
 
                 <p>
-                  <label for="imagen">Imagen del producto</label><br>
-                  <input type="file" id="imagen" name="imagen">
+                  <label for="imagen"><strong>Imagen del producto:</strong></label><br>
+                  <input type="file" id="imagen" accept="image/*">
                 </p>
 
                 <p>
                   <button type="submit">Guardar</button>
-                  <a href="adminProductos.html">
-                    <button type="button">Cancelar</button>
-                  </a>
-                </p>
-
-              </form>
-
-              <hr>
-
-              <form action="#" method="post">
-                <p>
-                  <button type="submit" style="background-color:#c0392b; color:white;">
-                    Eliminar Producto
-                  </button>
+                  <button type="button" onclick="window.location.href='adminProductos.html'">Cancelar</button>
                 </p>
               </form>
 
@@ -142,5 +143,8 @@
     </tr>
   </table>
 
+  <!-- Carga de Scripts -->
+  <script src="js/productos.js"></script>
+  <script src="js/productoForm.js"></script>
 </body>
 </html>
