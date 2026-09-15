@@ -9,23 +9,23 @@
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr valign="top">
 
-      <!-- ===================== SIDEBAR ===================== -->
+<!-- ===================== SIDEBAR ===================== -->
       <td width="200">
         <table width="100%" cellpadding="8">
           <tr>
             <td>
-              <strong>&#9670; Company</strong>
+              <strong>&#9670; SONIDO VIVO</strong>
             </td>
           </tr>
           <tr><td><hr></td></tr>
           <tr>
             <td>
               <nav>
-                <p><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
-                <p><a href="adminProductos.html">&#128230; Productos</a></p>
-                <p><a href="adminReportes.html">&#128202; Reportes</a></p>
-                <p><a href="adminUsuarios.html">&#128100; Clientes</a></p>
-                <p><a href="adminEmpleados.html">&#128100; Empleados</a></p>
+                <p data-roles="Administrador"><a href="adminHome.html"><strong>&#9638; Dashboard</strong></a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminProductos.html">&#128230; Productos</a></p>
+                <p data-roles="Administrador,Vendedor"><a href="adminEncargos.html">&#128221; Encargos</a></p>
+                <p data-roles="Administrador"><a href="adminUsuarios.html">&#128100; Clientes</a></p>
+                <p data-roles="Administrador"><a href="adminEmpleados.html">&#128100; Empleados</a></p>
               </nav>
             </td>
           </tr>
@@ -93,7 +93,13 @@
     </tr>
   </table>
 
-  <!-- Enlace a la lógica JS -->
+  <script src="js/auth.js"></script>
+
+  <script>
+    protegerRuta(["Administrador"]);
+  </script>
+
   <script src="js/listaUsuarios.js"></script>
+  
 </body>
 </html>
