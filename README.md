@@ -75,7 +75,8 @@ git clone [https://github.com/tu-usuario/fullstack2-sonidoVivo.git](https://gith
 ### Paso 2: Ejecución Local
 Navegue a la carpeta del proyecto:
 * cd fullstack2-sonidoVivo-main.
-* Abra el archivo index.html en su navegador o inicie un servidor local liviano mediante la extensión Live Server en Visual Studio Code.
+* npm run dev en el terminal
+
 
 🌐 Enlaces e Interfaz Interactiva
 
