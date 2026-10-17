@@ -4,6 +4,7 @@ import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { obtenerProductos } from './services/productos.js';
 import DetalleProducto from './pages/DetalleProducto.jsx';
 import Carrito from './pages/Carrito.jsx';
+import Checkout from './pages/Checkout.jsx';
 
 function Catalogo() {
   const [productos, setProductos] = useState([]);
@@ -231,6 +232,7 @@ function App() {
       />
       <Route path="/carrito" element={<Carrito />} />
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/checkout" element={<Checkout />} />
     </Routes>
   );
 }

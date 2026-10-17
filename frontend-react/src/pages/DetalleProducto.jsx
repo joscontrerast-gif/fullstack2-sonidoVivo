@@ -11,9 +11,16 @@ function DetalleProducto() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
+  const [agregado, setAgregado] = useState(false);
 
   useEffect(() => {
     async function cargarProducto() {
+      setCargando(true);
+      setError('');
+      setProducto(null);
+      setMensaje('');
+      setAgregado(false);
+
       try {
         const productos = await obtenerProductos();
 
@@ -41,11 +48,18 @@ function DetalleProducto() {
 
   function manejarAgregarAlCarrito() {
     if (!producto || Number(producto.stock) <= 0) {
+      setMensaje('Este producto no tiene stock disponible.');
+      setAgregado(false);
       return;
     }
 
-    agregarAlCarrito(producto.codigo);
-    setMensaje('¡Producto agregado al carrito!');
+    const resultado = agregarAlCarrito(
+      producto.codigo,
+      Number(producto.stock)
+    );
+
+    setMensaje(resultado.mensaje);
+    setAgregado(resultado.exito);
   }
 
   if (cargando) {
@@ -60,7 +74,6 @@ function DetalleProducto() {
     return (
       <main className="container py-5">
         <div className="alert alert-danger">{error}</div>
-
         <Link to="/" className="btn btn-secondary">
           Volver al catálogo
         </Link>
@@ -72,7 +85,6 @@ function DetalleProducto() {
     return (
       <main className="container py-5">
         <h1>Producto no encontrado</h1>
-
         <Link to="/" className="btn btn-primary mt-3">
           Volver al catálogo
         </Link>
@@ -130,13 +142,21 @@ function DetalleProducto() {
             </p>
 
             {mensaje && (
-              <div className="alert alert-success" role="status">
+              <div
+                className={`alert ${
+                  agregado ? 'alert-success' : 'alert-warning'
+                }`}
+                role="status"
+              >
                 {mensaje}
-                <div className="mt-2">
-                  <Link to="/carrito" className="btn btn-success btn-sm">
-                    Ver carrito
-                  </Link>
-                </div>
+
+                {agregado && (
+                  <div className="mt-2">
+                    <Link to="/carrito" className="btn btn-success btn-sm">
+                      Ver carrito
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
 
