@@ -1,7 +1,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes } from 'react-router-dom';
 import { obtenerProductos } from './services/productos.js';
+import DetalleProducto from './pages/DetalleProducto.jsx';
+import Carrito from './pages/Carrito.jsx';
 
 function Catalogo() {
   const [productos, setProductos] = useState([]);
@@ -26,8 +28,13 @@ function Catalogo() {
   }, []);
 
   const categorias = useMemo(() => {
-    return [...new Set(productos.map((producto) => producto.categoria))]
-      .sort((a, b) => a.localeCompare(b, 'es'));
+    return [
+      ...new Set(
+        productos
+          .map((producto) => producto.categoria)
+          .filter(Boolean)
+      ),
+    ].sort((a, b) => a.localeCompare(b, 'es'));
   }, [productos]);
 
   const productosFiltrados = productos.filter((producto) => {
@@ -38,7 +45,9 @@ function Catalogo() {
       producto.marca,
       producto.modelo,
       producto.codigo,
-    ].some((dato) => dato?.toLowerCase().includes(termino));
+    ].some((dato) =>
+      String(dato ?? '').toLowerCase().includes(termino)
+    );
 
     const coincideCategoria =
       !categoriaSeleccionada ||
@@ -52,19 +61,25 @@ function Catalogo() {
       style: 'currency',
       currency: 'CLP',
       maximumFractionDigits: 0,
-    }).format(precio);
+    }).format(Number(precio) || 0);
 
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         <div className="container">
-          <a className="navbar-brand fw-bold" href="/">
+          <Link className="navbar-brand fw-bold" to="/">
             Sonido Vivo
-          </a>
+          </Link>
 
-          <span className="navbar-text">
-            Instrumentos y equipos musicales
-          </span>
+          <div className="d-flex align-items-center gap-3">
+            <span className="navbar-text d-none d-sm-inline">
+              Instrumentos y equipos musicales
+            </span>
+
+            <Link to="/carrito" className="btn btn-outline-light">
+              🛒 Carrito
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -117,12 +132,20 @@ function Catalogo() {
         </div>
 
         {cargando && (
-          <p className="text-center py-5">Cargando productos...</p>
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Cargando...</span>
+            </div>
+            <p className="mt-2">Cargando productos...</p>
+          </div>
         )}
 
         {error && (
           <div className="alert alert-danger" role="alert">
-            {error}. Comprueba que exista public/data/productos.json.
+            No se pudieron cargar los productos: {error}
+            <p className="mb-0 mt-2">
+              Comprueba que exista public/data/productos.json.
+            </p>
           </div>
         )}
 
@@ -139,11 +162,14 @@ function Catalogo() {
             ) : (
               <div className="row g-4">
                 {productosFiltrados.map((producto) => (
-                  <div className="col-sm-6 col-lg-4" key={producto.codigo}>
+                  <div
+                    className="col-sm-6 col-lg-4"
+                    key={producto.codigo}
+                  >
                     <article className="card h-100 shadow-sm">
                       <div className="card-body d-flex flex-column">
                         <span className="badge text-bg-secondary align-self-start mb-2">
-                          {producto.categoria}
+                          {producto.categoria || 'Sin categoría'}
                         </span>
 
                         <h2 className="h5 card-title">
@@ -168,11 +194,20 @@ function Catalogo() {
                           </p>
 
                           <p className="small">
-                            {producto.stock > 0
+                            {Number(producto.stock) > 0
                               ? `Stock disponible: ${producto.stock}`
                               : 'Sin stock'}
                           </p>
                         </div>
+
+                        <Link
+                          to={`/productos/${encodeURIComponent(
+                            String(producto.codigo)
+                          )}`}
+                          className="btn btn-outline-primary mt-2"
+                        >
+                          Ver detalle
+                        </Link>
                       </div>
                     </article>
                   </div>
@@ -190,6 +225,11 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Catalogo />} />
+      <Route
+        path="/productos/:codigo"
+        element={<DetalleProducto />}
+      />
+      <Route path="/carrito" element={<Carrito />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
