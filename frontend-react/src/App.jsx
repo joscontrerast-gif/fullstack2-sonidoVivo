@@ -5,6 +5,7 @@ import { obtenerProductos } from './services/productos.js';
 import DetalleProducto from './pages/DetalleProducto.jsx';
 import Carrito from './pages/Carrito.jsx';
 import Checkout from './pages/Checkout.jsx';
+import PanelAdmin from './modules/admin/pages/PanelAdmin.jsx';
 
 function Catalogo() {
   const [productos, setProductos] = useState([]);
@@ -231,6 +232,7 @@ function App() {
         element={<DetalleProducto />}
       />
       <Route path="/carrito" element={<Carrito />} />
+      <Route path="/admin" element={<PanelAdmin />} />
       <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/checkout" element={<Checkout />} />
     </Routes>
