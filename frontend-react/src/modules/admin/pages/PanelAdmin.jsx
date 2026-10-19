@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { codigoDe } from '../../../data/productos.js';
 import TablaProductos from '../components/TablaProductos.jsx';
 import FormularioProducto from '../components/FormularioProducto.jsx';
@@ -115,21 +114,9 @@ function PanelAdmin() {
 
   return (
     <>
-      <nav className="navbar navbar-dark bg-dark">
-        <div className="container">
-          <span className="navbar-brand fw-bold">
-            Sonido Vivo · Administración
-          </span>
-
-          <Link to="/" className="btn btn-outline-light btn-sm">
-            Ir a la tienda
-          </Link>
-        </div>
-      </nav>
-
-      <main className="container py-4">
+      <div>
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-          <h1 className="fw-bold mb-0">Panel administrativo</h1>
+          <h1 className="fw-bold mb-0">Productos</h1>
 
           {vista === 'lista' && (
             <button
@@ -288,7 +275,7 @@ function PanelAdmin() {
             />
           </>
         )}
-      </main>
+      </div>
     </>
   );
 }

@@ -685,7 +685,7 @@ describe('PanelAdmin', () => {
     renderizarPanel();
 
     expect(await screen.findByText('Fender Stratocaster')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Panel administrativo' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Productos' })).toBeTruthy();
     expect(screen.getByTestId('resumen-total').textContent).toBe('3');
     expect(screen.getByTestId('resumen-criticos').textContent).toBe('1');
     expect(screen.getByTestId('resumen-sin-stock').textContent).toBe('1');
