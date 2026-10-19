@@ -59,49 +59,49 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? Number(inputStockCritico.value) 
         : null;
 
-      // 1. Validaciones de Código (Requerido, Mínimo 3 caracteres)
+      // 1. Validaciones de Código 
       if (!codigoVal || codigoVal.length < 3) {
         alert("El Código del producto debe tener al menos 3 caracteres.");
         inputSku.focus();
         return;
       }
 
-      // 2. Validación de Nombre (Requerido, Máximo 100 caracteres)
+      // 2. Validación de Nombre 
       if (!nombreVal || nombreVal.length > 100) {
         alert("El Nombre es obligatorio y no puede superar los 100 caracteres.");
         inputNombre.focus();
         return;
       }
 
-      // 3. Validación de Descripción (Opcional, Máximo 500 caracteres)
+      // 3. Validación de Descripción 
       if (descripcionVal.length > 500) {
         alert("La Descripción no puede superar los 500 caracteres.");
         inputDescripcion.focus();
         return;
       }
 
-      // 4. Validación de Categoría (Requerida)
+      // 4. Validación de Categoría 
       if (!categoriaVal) {
         alert("Debes seleccionar una Categoría.");
         selectCategoria.focus();
         return;
       }
 
-      // 5. Validación de Precio (Requerido, Min: 0, Permite decimales)
+      // 5. Validación de Precio 
       if (isNaN(precioVal) || precioVal < 0) {
         alert("El Precio es obligatorio y debe ser mayor o igual a 0.");
         inputPrecio.focus();
         return;
       }
 
-      // 6. Validación de Stock (Requerido, Min: 0, Solo enteros)
+      // 6. Validación de Stock 
       if (isNaN(stockVal) || stockVal < 0 || !Number.isInteger(stockVal)) {
         alert("El Stock es obligatorio, debe ser un número entero mayor o igual a 0.");
         inputStock.focus();
         return;
       }
 
-      // 7. Validación de Stock Crítico (Opcional, Min: 0, Solo enteros)
+      // 7. Validación de Stock Crítico 
       if (stockCriticoVal !== null && (isNaN(stockCriticoVal) || stockCriticoVal < 0 || !Number.isInteger(stockCriticoVal))) {
         alert("El Stock Crítico debe ser un número entero mayor o igual a 0.");
         inputStockCritico.focus();

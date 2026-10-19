@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin - Empleados</title>
+    <script src="js/auth.js"></script>
+  <script>
+    protegerRuta(["Administrador"]);
+  </script>
 </head>
 <body>
 
@@ -100,12 +104,6 @@
 
     </tr>
   </table>
-
-  <script src="js/auth.js"></script>
-
-  <script>
-    protegerRuta(["Administrador"]);
-  </script>
   <!-- Script que maneja la tabla de empleados -->
   <script src="js/listaEmpleados.js"></script>
 </body>

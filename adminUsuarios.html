@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin - Usuarios</title>
+    <script src="js/auth.js"></script>
+
+  <script>
+    protegerRuta(["Administrador"]);
+  </script>
 </head>
 <body>
 
@@ -92,12 +97,6 @@
 
     </tr>
   </table>
-
-  <script src="js/auth.js"></script>
-
-  <script>
-    protegerRuta(["Administrador"]);
-  </script>
 
   <script src="js/listaUsuarios.js"></script>
   
