@@ -5,6 +5,8 @@ import { obtenerProductos } from './services/productos.js';
 import DetalleProducto from './pages/DetalleProducto.jsx';
 import Carrito from './pages/Carrito.jsx';
 import Checkout from './pages/Checkout.jsx';
+import CompraExitosa from './modules/compra/pages/CompraExitosa.jsx';
+import CompraFallida from './modules/compra/pages/CompraFallida.jsx';
 
 function Catalogo() {
   const [productos, setProductos] = useState([]);
@@ -231,8 +233,10 @@ function App() {
         element={<DetalleProducto />}
       />
       <Route path="/carrito" element={<Carrito />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/checkout" element={<Checkout />} />
+      <Route path="/compra-exitosa" element={<CompraExitosa />} />
+      <Route path="/compra-fallida" element={<CompraFallida />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
