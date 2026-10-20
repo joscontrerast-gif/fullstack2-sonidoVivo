@@ -9,7 +9,7 @@ module.exports = {
     [
       'istanbul',
       {
-        include: ['src/services/**/*.js'],
+        include: ['src/services/**/*.js', 'src/modules/**/services/*.js'],
         exclude: ['**/*.spec.js', '**/*.spec.jsx']
       }
     ]
