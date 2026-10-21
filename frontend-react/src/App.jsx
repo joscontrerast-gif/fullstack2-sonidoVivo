@@ -5,6 +5,11 @@ import { obtenerProductos } from './services/productos.js';
 import DetalleProducto from './pages/DetalleProducto.jsx';
 import Carrito from './pages/Carrito.jsx';
 import Checkout from './pages/Checkout.jsx';
+import LayoutAdmin from './modules/admin/components/LayoutAdmin.jsx';
+import DashboardAdmin from './modules/admin/pages/DashboardAdmin.jsx';
+import PanelAdmin from './modules/admin/pages/PanelAdmin.jsx';
+import EncargosAdmin from './modules/admin/pages/EncargosAdmin.jsx';
+import PersonasAdmin from './modules/admin/pages/PersonasAdmin.jsx';
 import CompraExitosa from './modules/compra/pages/CompraExitosa.jsx';
 import CompraFallida from './modules/compra/pages/CompraFallida.jsx';
 
@@ -233,6 +238,19 @@ function App() {
         element={<DetalleProducto />}
       />
       <Route path="/carrito" element={<Carrito />} />
+      <Route path="/admin" element={<LayoutAdmin />}>
+        <Route index element={<DashboardAdmin />} />
+        <Route path="productos" element={<PanelAdmin />} />
+        <Route path="encargos" element={<EncargosAdmin />} />
+        <Route
+          path="clientes"
+          element={<PersonasAdmin key="cliente" tipo="cliente" />}
+        />
+        <Route
+          path="empleados"
+          element={<PersonasAdmin key="empleado" tipo="empleado" />}
+        />
+      </Route>
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/compra-exitosa" element={<CompraExitosa />} />
       <Route path="/compra-fallida" element={<CompraFallida />} />
