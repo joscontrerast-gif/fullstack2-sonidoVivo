@@ -8,11 +8,11 @@ Aplicación frontend de una tienda online de instrumentos y equipos musicales, d
 
 ## 👥 Equipo de desarrollo
 
-| Integrante | Responsabilidad principal del proyecto |
-|---|---|
+| Integrante     | Responsabilidad principal del proyecto                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
 | Jose Contreras | Tienda principal: catálogo, búsqueda y filtros, detalle de producto, carrito y flujo de compra simulado |
-| Matias Peña | Módulo administrativo y mantenedores |
-| Sofia Caceres | Vistas informativas, formularios y apoyo en estilos |
+| Matias Peña    | Módulo administrativo y mantenedores                                                                    |
+| Sofia Caceres  | Vistas informativas, formularios y apoyo en estilos                                                     |
 
 La distribución corresponde a la organización de trabajo del equipo; las funciones disponibles pueden variar según el módulo y la versión integrada en esta entrega.
 
@@ -37,6 +37,7 @@ La distribución corresponde a la organización de trabajo del equipo; las funci
 ## 🛍️ Funcionalidades del frontend
 
 ### Catálogo
+
 - Obtención de productos desde el archivo JSON servido por la aplicación.
 - Visualización de los productos y de sus datos disponibles.
 - Búsqueda de productos.
@@ -44,10 +45,12 @@ La distribución corresponde a la organización de trabajo del equipo; las funci
 - Manejo de estados de carga y errores de obtención de datos.
 
 ### Detalle de producto
+
 - Visualización de información del producto seleccionado.
 - Validación de disponibilidad antes de agregarlo al carrito.
 
 ### Carrito de compras
+
 - Agregar productos.
 - Cambiar cantidades.
 - Eliminar productos individuales o vaciar el carrito.
@@ -57,6 +60,7 @@ La distribución corresponde a la organización de trabajo del equipo; las funci
 La clave de almacenamiento utilizada por el carrito es `carritoSonidoVivo`.
 
 ### Checkout
+
 - Cálculo del subtotal.
 - Selección de una opción de despacho y cálculo de su costo.
 - Validaciones del carrito antes de confirmar.
@@ -150,14 +154,14 @@ npm test
 
 La última ejecución reportada por el equipo fue:
 
-| Indicador | Resultado reportado |
-|---|---:|
-| Pruebas aprobadas | 47 de 47 |
-| Pruebas fallidas | 0 |
-| Sentencias instrumentadas | 100% (40/40) |
-| Ramas instrumentadas | 100% (22/22) |
-| Funciones instrumentadas | 100% (10/10) |
-| Líneas instrumentadas | 100% (40/40) |
+| Indicador                 | Resultado reportado |
+| ------------------------- | ------------------: |
+| Pruebas aprobadas         |            47 de 47 |
+| Pruebas fallidas          |                   0 |
+| Sentencias instrumentadas |        100% (40/40) |
+| Ramas instrumentadas      |        100% (22/22) |
+| Funciones instrumentadas  |        100% (10/10) |
+| Líneas instrumentadas     |        100% (40/40) |
 
 Las suites reportadas incluyen pruebas para `App`, `DetalleProducto`, `Carrito`, `Checkout` y servicios.
 

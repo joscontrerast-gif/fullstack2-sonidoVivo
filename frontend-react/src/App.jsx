@@ -10,6 +10,8 @@ import DashboardAdmin from './modules/admin/pages/DashboardAdmin.jsx';
 import PanelAdmin from './modules/admin/pages/PanelAdmin.jsx';
 import EncargosAdmin from './modules/admin/pages/EncargosAdmin.jsx';
 import PersonasAdmin from './modules/admin/pages/PersonasAdmin.jsx';
+import CompraExitosa from './modules/compra/pages/CompraExitosa.jsx';
+import CompraFallida from './modules/compra/pages/CompraFallida.jsx';
 
 function Catalogo() {
   const [productos, setProductos] = useState([]);
@@ -249,8 +251,10 @@ function App() {
           element={<PersonasAdmin key="empleado" tipo="empleado" />}
         />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/checkout" element={<Checkout />} />
+      <Route path="/compra-exitosa" element={<CompraExitosa />} />
+      <Route path="/compra-fallida" element={<CompraFallida />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

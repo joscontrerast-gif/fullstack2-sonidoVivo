@@ -1,7 +1,8 @@
 import React from 'react';
 import {render,screen,cleanup,fireEvent,} from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import Checkout from './Checkout.jsx';
+import CompraExitosa from '../modules/compra/pages/CompraExitosa.jsx';
 
 const productoPrueba = {
   codigo: 'GTR001',
@@ -159,8 +160,15 @@ describe('Checkout de Sonido Vivo', () => {
     ).not.toBeNull();
   });
 
-  it('confirma la compra y vacía el carrito', async () => {
-    renderizarCheckout();
+  it('confirma la compra, vacía el carrito y muestra la página de éxito', async () => {
+    render(
+      <MemoryRouter initialEntries={['/checkout']}>
+        <Routes>
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/compra-exitosa" element={<CompraExitosa />} />
+        </Routes>
+      </MemoryRouter>
+    );
 
     await screen.findByText('Guitarra eléctrica × 2');
 
@@ -197,5 +205,21 @@ describe('Checkout de Sonido Vivo', () => {
         name: 'Volver a la tienda',
       })
     ).toBeTruthy();
+  });
+
+  it('muestra errores de validación y no avanza si el formulario está vacío', async () => {
+    renderizarCheckout();
+
+    await screen.findByText('Guitarra eléctrica × 2');
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Confirmar compra',
+      })
+    );
+
+    expect(screen.getByText(/dirección de al menos 5/)).toBeTruthy();
+    expect(screen.getByText(/comuna de al menos 3/)).toBeTruthy();
+    expect(localStorage.getItem('carritoSonidoVivo')).not.toBeNull();
   });
 });
