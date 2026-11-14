@@ -1,0 +1,33 @@
+server:
+  port: 8082
+  error:
+    include-message: always
+
+spring:
+  application:
+    name: ms-carrito
+  datasource:
+    # Oracle. Cambia estos valores por los de tu base (o define las variables de entorno).
+    # XE local:            jdbc:oracle:thin:@//localhost:1521/XEPDB1
+    # Autonomous con wallet: jdbc:oracle:thin:@NOMBRE_ALIAS?TNS_ADMIN=C:/ruta/Wallet
+    url: ${DB_URL:jdbc:oracle:thin:@//localhost:1521/XEPDB1}
+    username: ${DB_USER:CAMBIAR_USUARIO}
+    password: ${DB_PASSWORD:CAMBIAR_CLAVE}
+    driver-class-name: oracle.jdbc.OracleDriver
+  jpa:
+    hibernate:
+      # "update" crea ITEMS_CARRITO si no existe. Si ya la creaste con el script SQL, puedes dejar "none".
+      ddl-auto: ${DDL_AUTO:update}
+    open-in-view: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      # Pon "always" SOLO la primera vez, en una BD vacía, para cargar el catálogo de prueba (data.sql).
+      mode: ${SQL_INIT_MODE:never}
+
+# Debe ser la MISMA clave (HS256, mínimo 32 caracteres) con la que el ms-login firma los tokens.
+jwt:
+  secret: ${JWT_SECRET:cambia-esta-clave-compartida-con-ms-login-123456}
+
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
