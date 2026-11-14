@@ -1,0 +1,14 @@
+com\sonidoVivo\ms_carrito\dto\CantidadRequest.class
+com\sonidoVivo\ms_carrito\model\Categoria.class
+com\sonidoVivo\ms_carrito\dto\ItemRequest.class
+com\sonidoVivo\ms_carrito\security\AuthInterceptor.class
+com\sonidoVivo\ms_carrito\MsCarritoApplication.class
+com\sonidoVivo\ms_carrito\service\CarritoService.class
+com\sonidoVivo\ms_carrito\dto\ItemResponse.class
+com\sonidoVivo\ms_carrito\model\Producto.class
+com\sonidoVivo\ms_carrito\model\ItemCarrito.class
+com\sonidoVivo\ms_carrito\controller\CarritoController.class
+com\sonidoVivo\ms_carrito\config\WebConfig.class
+com\sonidoVivo\ms_carrito\repository\ProductoRepository.class
+com\sonidoVivo\ms_carrito\security\JwtService.class
+com\sonidoVivo\ms_carrito\repository\ItemCarritoRepository.class

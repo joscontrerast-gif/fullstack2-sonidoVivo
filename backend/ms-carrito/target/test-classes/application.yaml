@@ -1,0 +1,19 @@
+# Configuración SOLO para las pruebas: H2 en memoria, sin Oracle.
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  sql:
+    init:
+      mode: never
+
+jwt:
+  secret: clave-solo-para-pruebas-con-mas-de-32-caracteres-123
+
+cors:
+  allowed-origins: http://localhost:5173
