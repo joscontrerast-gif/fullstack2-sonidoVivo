@@ -8,6 +8,7 @@ const VALORES_VACIOS = {
   marca: '',
   modelo: '',
   descripcion: '',
+  imagen: '',
   categoria: '',
   precio: '',
   stock: '',
@@ -25,6 +26,7 @@ function desdeProducto(producto) {
     marca: producto.marca ?? '',
     modelo: producto.modelo ?? '',
     descripcion: producto.descripcion ?? '',
+    imagen: producto.imagen ?? '',
     categoria: producto.categoria ?? '',
     precio: String(producto.precio ?? ''),
     stock: String(producto.stock ?? ''),
@@ -160,6 +162,28 @@ function FormularioProducto({
           rows={4}
           placeholder={`Opcional. Máximo ${LIMITES.descripcion} caracteres.`}
         />
+      </Campo>
+
+      <Campo
+        id="imagen"
+        etiqueta="Imagen (URL o ruta)"
+        error={errores.imagen}
+      >
+        <input
+          {...propsCampo('imagen')}
+          type="text"
+          placeholder="Ej: /img/productos/GA001.svg o https://..."
+        />
+        {valores.imagen.trim() && (
+          <div className="mt-2">
+            <img
+              src={valores.imagen.trim()}
+              alt="Vista previa del producto"
+              className="rounded border bg-light p-1"
+              style={{ height: '72px', objectFit: 'contain' }}
+            />
+          </div>
+        )}
       </Campo>
 
       <div className="row">

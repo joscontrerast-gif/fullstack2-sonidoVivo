@@ -1,5 +1,7 @@
 package cl.sonidovivo.admin.entity;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -8,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "productos")
@@ -37,6 +38,9 @@ public class Producto {
 
     @Column(name = "descripcion")
     private String descripcion;
+
+    @Column(name = "imagen", length = 500)
+    private String imagen;
 
     @Column(name = "precio", nullable = false)
     private Integer precio;
@@ -67,6 +71,8 @@ public class Producto {
     public void setModelo(String modelo) { this.modelo = modelo; }
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getImagen() { return imagen; }
+    public void setImagen(String imagen) { this.imagen = imagen; }
     public Integer getPrecio() { return precio; }
     public void setPrecio(Integer precio) { this.precio = precio; }
     public Integer getStock() { return stock; }

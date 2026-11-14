@@ -1,5 +1,4 @@
-// Lógica del módulo de encargos (órdenes de compra) y del dashboard.
-
+import { URLS, apiFetch, obtenerToken } from '../../../services/api.js';
 import {
   ESTADOS_ENCARGO,
   actualizarEstadoEncargo,
@@ -9,13 +8,12 @@ import {
 
 export { ESTADOS_ENCARGO };
 
-// Más recientes primero, como en el sitio original.
-// Se puede filtrar por estado ('todos' muestra todos).
+// --- Funciones síncronas (tests unitarios encargos.spec.js) ---
+
 export function listarEncargos(filtroEstado = 'todos') {
   const encargos = obtenerEncargos().filter(
     (encargo) => filtroEstado === 'todos' || encargo.estado === filtroEstado
   );
-
   return [...encargos].reverse();
 }
 
@@ -40,15 +38,72 @@ export function formatearTotal(total) {
 }
 
 export function textoEntrega(tipoEntrega) {
-  if (tipoEntrega === 'retiro') return 'Retiro en tienda';
-  if (tipoEntrega) return 'Despacho a domicilio';
-
-  return 'No informado';
+  if (!tipoEntrega) return 'No informado';
+  const val = String(tipoEntrega).toLowerCase();
+  if (val.includes('retiro')) return 'Retiro en tienda';
+  return 'Despacho a domicilio';
 }
 
-// Cantidad de encargos por estado, para el dashboard
 export function resumenEncargos() {
   const encargos = obtenerEncargos();
+  const resumen = { total: encargos.length };
+
+  ESTADOS_ENCARGO.forEach((estado) => {
+    resumen[estado] = encargos.filter((e) => e.estado === estado).length;
+  });
+
+  return resumen;
+}
+
+// --- Funciones conectadas al microservicio admin (8082) ---
+
+function normalizarEncargoBackend(e) {
+  return {
+    ...e,
+    fecha: e.fecha ? new Date(e.fecha).toLocaleString('es-CL') : '—',
+  };
+}
+
+export async function listarEncargosApi(filtroEstado = 'todos') {
+  if (!obtenerToken()) {
+    return listarEncargos(filtroEstado);
+  }
+  const path =
+    filtroEstado && filtroEstado !== 'todos'
+      ? `/api/admin/encargos?estado=${encodeURIComponent(filtroEstado)}`
+      : '/api/admin/encargos';
+
+  const lista = await apiFetch(URLS.admin, path);
+  return (Array.isArray(lista) ? lista : []).map(normalizarEncargoBackend);
+}
+
+export async function listarPendientesApi() {
+  if (!obtenerToken()) {
+    return listarPendientes();
+  }
+  return await listarEncargosApi('Pendiente');
+}
+
+export async function cambiarEstadoApi(id, nuevoEstado) {
+  if (!obtenerToken()) {
+    return cambiarEstado(id, nuevoEstado);
+  }
+  const actualizado = await apiFetch(
+    URLS.admin,
+    `/api/admin/encargos/${encodeURIComponent(id)}/estado`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ estado: nuevoEstado }),
+    }
+  );
+  return normalizarEncargoBackend(actualizado);
+}
+
+export async function resumenEncargosApi() {
+  if (!obtenerToken()) {
+    return resumenEncargos();
+  }
+  const encargos = await listarEncargosApi('todos');
   const resumen = { total: encargos.length };
 
   ESTADOS_ENCARGO.forEach((estado) => {

@@ -1,6 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { obtenerComunas, REGIONES } from '../../../data/regiones.js';
 import { claveDe } from '../../../data/usuarios.js';
+import { obtenerToken } from '../../../services/api.js';
+import {
+  obtenerComunas as obtenerComunasApi,
+  obtenerRegiones as obtenerRegionesApi,
+} from '../../../services/auth.js';
 import { LIMITES_PERSONA } from '../services/validaciones.js';
 import { ROLES_EMPLEADO, rolDe } from '../services/personasService.js';
 import Campo from './Campo.jsx';
@@ -13,6 +18,7 @@ const VALORES_VACIOS = {
   rol: '',
   region: '',
   comuna: '',
+  idComuna: '',
   direccion: '',
   contrasena: '',
   confirmarContrasena: '',
@@ -23,7 +29,6 @@ function desdePersona(persona) {
     return VALORES_VACIOS;
   }
 
-  // Los empleados antiguos pueden venir como "Empleado": equivale a Vendedor.
   const rol = rolDe(persona);
 
   return {
@@ -35,22 +40,15 @@ function desdePersona(persona) {
     rol: ROLES_EMPLEADO.includes(rol) ? rol : rol === 'Empleado' ? 'Vendedor' : '',
     region: persona.region ?? '',
     comuna: persona.comuna ?? '',
+    idComuna: persona.idComuna ? String(persona.idComuna) : '',
     direccion: persona.direccion ?? '',
   };
 }
 
-// Opciones de un select; si el valor guardado no está en la lista
-// (datos antiguos) se agrega para no perderlo al editar.
 function conValorActual(opciones, actual) {
   return actual && !opciones.includes(actual) ? [...opciones, actual] : opciones;
 }
 
-/**
- * Formulario de creación / edición de clientes y empleados.
- * - tipo: 'cliente' | 'empleado' (los empleados tienen además un rol).
- * - personaInicial: null para crear, la persona para editar.
- * - onGuardar(valores): debe devolver { ok, errores } (ver guardarPersona).
- */
 function FormularioPersona({
   tipo,
   personaInicial = null,
@@ -59,23 +57,61 @@ function FormularioPersona({
 }) {
   const modoEdicion = Boolean(personaInicial);
   const [valores, setValores] = useState(() => desdePersona(personaInicial));
+  const [regionesApi, setRegionesApi] = useState([]);
+  const [comunasApi, setComunasApi] = useState([]);
   const [errores, setErrores] = useState({});
   const [errorGeneral, setErrorGeneral] = useState('');
   const [guardando, setGuardando] = useState(false);
 
-  const regiones = conValorActual(
-    REGIONES.map((region) => region.nombre),
-    valores.region
-  );
-  const comunas = conValorActual(obtenerComunas(valores.region), valores.comuna);
+  const conBackend = Boolean(obtenerToken());
+
+  useEffect(() => {
+    if (!conBackend) return;
+    obtenerRegionesApi()
+      .then(setRegionesApi)
+      .catch(() => setRegionesApi([]));
+  }, [conBackend]);
+
+  useEffect(() => {
+    if (!conBackend || !valores.region) {
+      setComunasApi([]);
+      return;
+    }
+    const reg = regionesApi.find((r) => r.nombre === valores.region);
+    if (!reg) return;
+    obtenerComunasApi(reg.id)
+      .then(setComunasApi)
+      .catch(() => setComunasApi([]));
+  }, [conBackend, valores.region, regionesApi]);
+
+  const listaRegionesBase =
+    conBackend && regionesApi.length > 0
+      ? regionesApi.map((r) => r.nombre)
+      : REGIONES.map((region) => region.nombre);
+
+  const listaComunasBase =
+    conBackend && comunasApi.length > 0
+      ? comunasApi.map((c) => c.nombre)
+      : obtenerComunas(valores.region);
+
+  const regiones = conValorActual(listaRegionesBase, valores.region);
+  const comunas = conValorActual(listaComunasBase, valores.comuna);
 
   function manejarCambio(evento) {
     const { name, value } = evento.target;
 
+    let idComunaActualizado = valores.idComuna;
+    if (name === 'region') {
+      idComunaActualizado = '';
+    } else if (name === 'comuna' && conBackend) {
+      const comObj = comunasApi.find((c) => c.nombre === value);
+      idComunaActualizado = comObj ? String(comObj.id) : '';
+    }
+
     setValores((anteriores) => ({
       ...anteriores,
       [name]: value,
-      // Al cambiar de región, la comuna anterior deja de ser válida.
+      idComuna: idComunaActualizado,
       ...(name === 'region' ? { comuna: '' } : {}),
     }));
     setErrores((anteriores) => ({

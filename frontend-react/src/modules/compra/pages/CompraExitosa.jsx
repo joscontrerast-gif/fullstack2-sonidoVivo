@@ -3,7 +3,7 @@ import ResumenCompra from '../components/ResumenCompra.jsx';
 
 function CompraExitosa() {
   const location = useLocation();
-  const compra = location.state?.compra;
+  const compra = location.state?.compra || location.state?.resumen;
 
   if (!compra) {
     return (

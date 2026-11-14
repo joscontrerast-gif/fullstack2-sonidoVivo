@@ -1,17 +1,21 @@
 package cl.sonidovivo.admin.security;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
-import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.HandlerInterceptor;
 
 /**
- * Protege /api/admin/**: exige un JWT válido de auth-service.
+ * Protege /api/admin/**:
+ * - Permite consultas GET públicas al catálogo de productos y categorías.
+ * - Exige un JWT válido de auth-service para el resto de operaciones.
  * - ADMINISTRADOR y VENDEDOR pueden usar productos, encargos y dashboard.
  * - Solo ADMINISTRADOR puede gestionar usuarios (clientes y empleados).
  */
@@ -32,9 +36,19 @@ public class AuthInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws IOException {
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+        String metodo = request.getMethod();
+        String uri = request.getRequestURI();
+
+        if ("OPTIONS".equalsIgnoreCase(metodo)) {
             return true; // preflight de CORS
         }
+
+        // Catálogo público para visitantes y clientes sin sesión
+        if ("GET".equalsIgnoreCase(metodo) &&
+                (uri.startsWith("/api/admin/productos") || uri.equals("/api/admin/categorias"))) {
+            return true;
+        }
+
         String cabecera = request.getHeader("Authorization");
         if (cabecera == null || !cabecera.startsWith("Bearer ")) {
             return rechazar(response, 401, "Falta el token de acceso");
@@ -49,7 +63,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (rol == null || !ROLES_PANEL.contains(rol)) {
             return rechazar(response, 403, "No tienes permisos para el panel de administración");
         }
-        if (request.getRequestURI().startsWith("/api/admin/usuarios") && !"ADMINISTRADOR".equals(rol)) {
+        if (uri.startsWith("/api/admin/usuarios") && !"ADMINISTRADOR".equals(rol)) {
             return rechazar(response, 403, "Solo un administrador puede gestionar usuarios");
         }
         request.setAttribute(ATTR_USUARIO_ID, Long.valueOf(claims.getSubject()));

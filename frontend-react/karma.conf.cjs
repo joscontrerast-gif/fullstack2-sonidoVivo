@@ -1,4 +1,3 @@
-
 module.exports = function (config) {
   config.set({
     basePath: '',
@@ -30,6 +29,7 @@ module.exports = function (config) {
     coverageReporter: {
       dir: 'coverage/',
       reporters: [
+        { type: 'text' },
         { type: 'text-summary' },
         { type: 'html', subdir: 'html' }
       ]
