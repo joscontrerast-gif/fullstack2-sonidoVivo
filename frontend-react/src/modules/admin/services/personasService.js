@@ -1,7 +1,4 @@
-// Lógica de la administración de clientes y empleados.
-// Ambos viven en la misma lista de localStorage ("usuarios") y se
-// distinguen por el campo tipoUsuario, igual que en el sitio original.
-
+import { URLS, apiFetch, obtenerToken } from '../../../services/api.js';
 import {
   actualizarUsuario,
   claveDe,
@@ -22,8 +19,6 @@ import {
 } from './validaciones.js';
 
 export const ROLES_EMPLEADO = ['Vendedor', 'Administrador'];
-
-// Valores de tipoUsuario que se consideran "empleado"
 const TIPOS_EMPLEADO = ['Empleado', 'Vendedor', 'Administrador'];
 
 export const CONFIG_PERSONAS = {
@@ -52,26 +47,24 @@ export const CONFIG_PERSONAS = {
 const MENSAJE_DUPLICADO = 'El RUN o Correo ya se encuentra registrado.';
 
 export function esDelTipo(usuario, tipo) {
-  return tipo === 'cliente'
-    ? usuario.tipoUsuario === 'Cliente'
-    : TIPOS_EMPLEADO.includes(usuario.tipoUsuario);
+  const t = usuario.tipoUsuario || usuario.tipo;
+  return tipo === 'cliente' ? t === 'Cliente' : TIPOS_EMPLEADO.includes(t);
 }
 
 export function listarPersonas(tipo) {
   return obtenerUsuarios().filter((usuario) => esDelTipo(usuario, tipo));
 }
 
-// Filtro de la lista de empleados: 'todos' | 'Administrador' | 'Empleado'
-// ("Empleado" agrupa a Empleados y Vendedores, como en el sitio original).
 export function filtrarEmpleados(empleados, filtro = 'todos') {
   if (filtro === 'Administrador') {
-    return empleados.filter((e) => e.tipoUsuario === 'Administrador');
+    return empleados.filter((e) => (e.tipoUsuario || e.tipo) === 'Administrador');
   }
 
   if (filtro === 'Empleado') {
-    return empleados.filter(
-      (e) => e.tipoUsuario === 'Empleado' || e.tipoUsuario === 'Vendedor'
-    );
+    return empleados.filter((e) => {
+      const t = e.tipoUsuario || e.tipo;
+      return t === 'Empleado' || t === 'Vendedor';
+    });
   }
 
   return empleados;
@@ -86,12 +79,11 @@ export function estadoDe(usuario) {
 }
 
 export function rolDe(usuario) {
-  return usuario.rol || usuario.tipoUsuario || '';
+  return usuario.rol || usuario.tipoUsuario || usuario.tipo || '';
 }
 
 function esCorreoDeOtro(existentes, correo, claveOriginal) {
   const objetivo = correo.toLowerCase();
-  // La clave original puede ser un RUN o, en usuarios sin RUN, su correo.
   const propia = claveOriginal ? normalizarClave(claveOriginal) : '';
 
   return existentes.some(
@@ -101,11 +93,6 @@ function esCorreoDeOtro(existentes, correo, claveOriginal) {
   );
 }
 
-/**
- * Valida el formulario de un cliente o empleado.
- * Devuelve { valido, errores, persona }. Al editar no se valida ni se
- * cambia el RUN, y la contraseña vacía significa "conservar la actual".
- */
 export function validarPersona(
   datos = {},
   { tipo = 'cliente', modo = 'crear', existentes = [], claveOriginal = null } = {}
@@ -124,9 +111,7 @@ export function validarPersona(
   const contrasena = String(datos.contrasena ?? '');
 
   const asignar = (campo, mensaje) => {
-    if (mensaje) {
-      errores[campo] = mensaje;
-    }
+    if (mensaje) errores[campo] = mensaje;
   };
 
   if (!edicion) {
@@ -162,7 +147,6 @@ export function validarPersona(
     })
   );
 
-  // Duplicados: solo se revisan si el RUN y el correo ya son válidos
   if (!edicion && !errores.run && !errores.correo) {
     const duplicado = existentes.some(
       (existente) =>
@@ -209,13 +193,9 @@ export function validarPersona(
     persona.password = contrasena;
   }
 
-  return { valido, errores: {}, persona };
+  return { valido: true, errores: {}, persona };
 }
 
-/**
- * Crea (claveOriginal = null) o edita una persona.
- * Si los datos no son válidos NO se guarda nada y se devuelven los errores.
- */
 export function guardarPersona(datos, tipo, claveOriginal = null) {
   const modo = claveOriginal ? 'editar' : 'crear';
   const resultado = validarPersona(datos, {
@@ -239,4 +219,95 @@ export function guardarPersona(datos, tipo, claveOriginal = null) {
 
 export function borrarPersona(clave) {
   return eliminarUsuario(clave);
+}
+
+// --- Funciones conectadas al microservicio admin (8082) ---
+
+function normalizarUsuarioBackend(u) {
+  return {
+    ...u,
+    tipoUsuario: u.tipo,
+    rol: u.tipo,
+    fechaRegistro: u.fechaRegistro
+      ? new Date(u.fechaRegistro).toLocaleDateString('es-CL')
+      : '—',
+  };
+}
+
+export async function listarPersonasApi(tipo) {
+  if (!obtenerToken()) {
+    return listarPersonas(tipo);
+  }
+  const grupo = tipo === 'cliente' ? 'clientes' : 'empleados';
+  const lista = await apiFetch(
+    URLS.admin,
+    `/api/admin/usuarios?grupo=${encodeURIComponent(grupo)}`
+  );
+  return (Array.isArray(lista) ? lista : []).map(normalizarUsuarioBackend);
+}
+
+export async function guardarPersonaApi(datos, tipo, personaOriginal = null) {
+  if (!obtenerToken()) {
+    const claveOriginal = personaOriginal ? claveDe(personaOriginal) : null;
+    return guardarPersona(datos, tipo, claveOriginal);
+  }
+
+  const modo = personaOriginal ? 'editar' : 'crear';
+  const resultado = validarPersona(datos, { tipo, modo });
+  if (!resultado.valido) {
+    return { ok: false, errores: resultado.errores, persona: null };
+  }
+
+  const payload = {
+    run: modo === 'editar' ? personaOriginal.run || null : normalizarRun(datos.run),
+    nombre: resultado.persona.nombre,
+    apellidos: resultado.persona.apellidos,
+    correo: resultado.persona.correo,
+    tipo: tipo === 'cliente' ? 'Cliente' : resultado.persona.rol,
+    idComuna: datos.idComuna ? Number(datos.idComuna) : null,
+    direccion: resultado.persona.direccion,
+    estado: personaOriginal?.estado || 'Activo',
+    ...(resultado.persona.password ? { password: resultado.persona.password } : {}),
+  };
+
+  const guardada =
+    modo === 'editar'
+      ? await apiFetch(
+          URLS.admin,
+          `/api/admin/usuarios/${encodeURIComponent(personaOriginal.id)}`,
+          {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+          }
+        )
+      : await apiFetch(URLS.admin, '/api/admin/usuarios', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+
+  return { ok: true, errores: {}, persona: normalizarUsuarioBackend(guardada) };
+}
+
+export async function borrarPersonaApi(persona) {
+  if (!obtenerToken()) {
+    return borrarPersona(claveDe(persona));
+  }
+  const payload = {
+    run: persona.run || null,
+    nombre: persona.nombre,
+    apellidos: persona.apellidos || '',
+    correo: persona.correo,
+    tipo: persona.tipo || persona.tipoUsuario,
+    idComuna: persona.idComuna || null,
+    direccion: persona.direccion || '',
+    estado: 'Inactivo',
+  };
+  return await apiFetch(
+    URLS.admin,
+    `/api/admin/usuarios/${encodeURIComponent(persona.id)}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }
+  );
 }

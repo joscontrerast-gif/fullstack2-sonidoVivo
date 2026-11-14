@@ -1,44 +1,71 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { obtenerToken } from '../../../services/api.js';
 import TablaEncargos from '../components/TablaEncargos.jsx';
 import {
   ESTADOS_ENCARGO,
   cambiarEstado,
+  cambiarEstadoApi,
   formatearTotal,
   listarEncargos,
+  listarEncargosApi,
   textoEntrega,
 } from '../services/encargosService.js';
 
 function EncargosAdmin() {
   const [filtroEstado, setFiltroEstado] = useState('todos');
-  const [encargos, setEncargos] = useState(() => listarEncargos());
+  const [encargos, setEncargos] = useState(() =>
+    obtenerToken() ? [] : listarEncargos()
+  );
   const [detalle, setDetalle] = useState(null);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
-  function recargar(filtro = filtroEstado) {
-    setEncargos(listarEncargos(filtro));
-  }
+  const recargar = useCallback(async (filtro = filtroEstado) => {
+    try {
+      const datos = await listarEncargosApi(filtro);
+      setEncargos(datos);
+      setError('');
+    } catch (err) {
+      setError(err.message || 'No se pudieron cargar los encargos.');
+    }
+  }, [filtroEstado]);
+
+  useEffect(() => {
+    if (obtenerToken()) {
+      recargar(filtroEstado);
+    }
+  }, [filtroEstado, recargar]);
 
   function manejarFiltro(evento) {
     const filtro = evento.target.value;
-
     setFiltroEstado(filtro);
-    recargar(filtro);
+    if (!obtenerToken()) {
+      setEncargos(listarEncargos(filtro));
+    }
   }
 
-  function manejarCambioEstado(id, nuevoEstado) {
+  async function manejarCambioEstado(id, nuevoEstado) {
     setMensaje('');
     setError('');
 
     try {
-      const actualizado = cambiarEstado(id, nuevoEstado);
+      if (!obtenerToken()) {
+        const actualizado = cambiarEstado(id, nuevoEstado);
+        setEncargos(listarEncargos(filtroEstado));
+        setMensaje(
+          `El estado del encargo ${id} fue actualizado a: ${nuevoEstado}`
+        );
+        setDetalle((actual) =>
+          actual && actual.id === id ? actualizado : actual
+        );
+        return;
+      }
 
-      recargar();
+      const actualizado = await cambiarEstadoApi(id, nuevoEstado);
+      await recargar(filtroEstado);
       setMensaje(
         `El estado del encargo ${id} fue actualizado a: ${nuevoEstado}`
       );
-
-      // Si el detalle abierto es de este encargo, se mantiene al día
       setDetalle((actual) => (actual && actual.id === id ? actualizado : actual));
     } catch (errorCambio) {
       setError(errorCambio.message);
@@ -65,7 +92,7 @@ function EncargosAdmin() {
         <section className="card shadow-sm mb-4" aria-label="Detalle del encargo">
           <div className="card-body">
             <div className="d-flex justify-content-between align-items-start">
-              <h2 className="h5">Detalle de la orden {detalle.id}</h2>
+              <h2 className="h5">Detalle de la orden {detalle.numeroOrden || detalle.id}</h2>
               <button
                 type="button"
                 className="btn btn-sm btn-outline-secondary"

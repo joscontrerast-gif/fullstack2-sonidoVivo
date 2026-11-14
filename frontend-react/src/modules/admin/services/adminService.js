@@ -1,11 +1,9 @@
-// Lógica del módulo administrativo: validaciones, helpers de presentación
-// y operaciones que orquestan la capa de datos (src/data/productos.js).
-
+import { URLS, apiFetch, obtenerToken } from '../../../services/api.js';
 import {
-  obtenerProductos,
-  crearProducto,
-  actualizarProducto,
-  eliminarProducto,
+  obtenerProductos as obtenerProductosLocal,
+  crearProducto as crearProductoLocal,
+  actualizarProducto as actualizarProductoLocal,
+  eliminarProducto as eliminarProductoLocal,
   normalizarCodigo,
   codigoDe,
 } from '../../../data/productos.js';
@@ -30,6 +28,7 @@ export const LIMITES = {
   marca: 50,
   modelo: 50,
   descripcion: 500,
+  imagen: 500,
 };
 
 const PATRON_CODIGO = /^[A-Z0-9-]+$/;
@@ -38,14 +37,11 @@ function texto(valor) {
   return String(valor ?? '').trim();
 }
 
-// Los inputs entregan strings: '' no es 0, es "sin valor".
 function aNumero(valor) {
   if (typeof valor === 'number') {
     return valor;
   }
-
   const limpio = texto(valor);
-
   return limpio === '' ? NaN : Number(limpio);
 }
 
@@ -53,11 +49,6 @@ function esEnteroNoNegativo(numero) {
   return Number.isInteger(numero) && numero >= 0;
 }
 
-/**
- * Valida los datos del formulario de producto.
- * Devuelve { valido, errores, producto }. "producto" viene normalizado
- * (strings recortados, números convertidos) solo si es válido.
- */
 export function validarProducto(
   datos = {},
   { modo = 'crear', productosExistentes = [] } = {}
@@ -69,6 +60,7 @@ export function validarProducto(
   const marca = texto(datos.marca);
   const modelo = texto(datos.modelo);
   const descripcion = texto(datos.descripcion);
+  const imagen = texto(datos.imagen);
   const categoria = texto(datos.categoria);
   const precio = aNumero(datos.precio);
   const stock = aNumero(datos.stock);
@@ -76,7 +68,6 @@ export function validarProducto(
   const stockCritico =
     stockCriticoBruto === '' ? null : aNumero(datos.stockCritico);
 
-  // El código solo se define al crear; al editar no se puede cambiar.
   if (modo === 'crear') {
     if (codigo.length < LIMITES.codigoMin) {
       errores.codigo = `El código debe tener al menos ${LIMITES.codigoMin} caracteres.`;
@@ -112,6 +103,10 @@ export function validarProducto(
     errores.descripcion = `La descripción no puede superar los ${LIMITES.descripcion} caracteres.`;
   }
 
+  if (imagen.length > LIMITES.imagen) {
+    errores.imagen = `La ruta o URL de imagen no puede superar los ${LIMITES.imagen} caracteres.`;
+  }
+
   if (!categoria) {
     errores.categoria = 'Debes seleccionar una categoría.';
   }
@@ -142,6 +137,7 @@ export function validarProducto(
           marca,
           modelo,
           descripcion,
+          imagen,
           categoria,
           precio,
           stock,
@@ -151,19 +147,18 @@ export function validarProducto(
   };
 }
 
-// ---- Operaciones CRUD del panel ----
+// ---- Operaciones CRUD (Oracle con sesión / localStorage en tests) ----
 
-export function listarProductos() {
-  return obtenerProductos();
+export async function listarProductos() {
+  if (!obtenerToken()) {
+    return await obtenerProductosLocal();
+  }
+  return await apiFetch(URLS.admin, '/api/admin/productos?todos=true');
 }
 
-/**
- * Crea un producto (codigoOriginal = null) o edita uno existente.
- * Si los datos no son válidos NO se guarda nada y se devuelven los errores.
- */
 export async function guardarProducto(datos, codigoOriginal = null) {
   const modo = codigoOriginal ? 'editar' : 'crear';
-  const existentes = await obtenerProductos();
+  const existentes = await listarProductos();
   const datosFinales =
     modo === 'editar' ? { ...datos, codigo: codigoOriginal } : datos;
 
@@ -176,16 +171,41 @@ export async function guardarProducto(datos, codigoOriginal = null) {
     return { ok: false, errores: resultado.errores, producto: null };
   }
 
+  if (!obtenerToken()) {
+    const producto =
+      modo === 'editar'
+        ? await actualizarProductoLocal(codigoOriginal, resultado.producto)
+        : await crearProductoLocal(resultado.producto);
+    return { ok: true, errores: {}, producto };
+  }
+
   const producto =
     modo === 'editar'
-      ? await actualizarProducto(codigoOriginal, resultado.producto)
-      : await crearProducto(resultado.producto);
+      ? await apiFetch(
+          URLS.admin,
+          `/api/admin/productos/${encodeURIComponent(codigoOriginal)}`,
+          {
+            method: 'PUT',
+            body: JSON.stringify(resultado.producto),
+          }
+        )
+      : await apiFetch(URLS.admin, '/api/admin/productos', {
+          method: 'POST',
+          body: JSON.stringify(resultado.producto),
+        });
 
   return { ok: true, errores: {}, producto };
 }
 
-export function borrarProducto(codigo) {
-  return eliminarProducto(codigo);
+export async function borrarProducto(codigo) {
+  if (!obtenerToken()) {
+    return await eliminarProductoLocal(codigo);
+  }
+  return await apiFetch(
+    URLS.admin,
+    `/api/admin/productos/${encodeURIComponent(codigo)}`,
+    { method: 'DELETE' }
+  );
 }
 
 // ---- Helpers de presentación y consulta ----
@@ -194,17 +214,14 @@ export function esStockCritico(producto) {
   if (producto.stockCritico === null || producto.stockCritico === undefined) {
     return false;
   }
-
   return Number(producto.stock) <= Number(producto.stockCritico);
 }
 
 export function formatearPrecio(valor) {
   const numero = Number(valor) || 0;
-
   if (numero === 0) {
     return 'FREE';
   }
-
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency: 'CLP',
@@ -212,14 +229,12 @@ export function formatearPrecio(valor) {
   }).format(numero);
 }
 
-// Categorías que existen hoy en los productos (para el filtro)
 export function obtenerCategorias(productos) {
   return [
     ...new Set(productos.map((producto) => producto.categoria).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b, 'es'));
 }
 
-// Categorías base + las que ya existan (para el formulario)
 export function obtenerCategoriasFormulario(productos) {
   return [
     ...new Set([...CATEGORIAS_BASE, ...obtenerCategorias(productos)]),

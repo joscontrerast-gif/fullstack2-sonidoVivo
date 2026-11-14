@@ -1,26 +1,27 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { claveDe } from '../../../data/usuarios.js';
+import { obtenerToken } from '../../../services/api.js';
 import FormularioPersona from '../components/FormularioPersona.jsx';
 import TablaPersonas from '../components/TablaPersonas.jsx';
 import {
   CONFIG_PERSONAS,
   borrarPersona,
+  borrarPersonaApi,
   filtrarEmpleados,
   guardarPersona,
+  guardarPersonaApi,
   listarPersonas,
+  listarPersonasApi,
   nombreCompleto,
 } from '../services/personasService.js';
 
-/**
- * Administración de clientes o empleados (tipo = 'cliente' | 'empleado').
- * Ambos usan la misma pantalla: lista, formulario de alta / edición
- * y eliminación con confirmación.
- */
 function PersonasAdmin({ tipo }) {
   const config = CONFIG_PERSONAS[tipo];
 
-  const [personas, setPersonas] = useState(() => listarPersonas(tipo));
-  const [vista, setVista] = useState('lista'); // 'lista' | 'formulario'
+  const [personas, setPersonas] = useState(() =>
+    obtenerToken() ? [] : listarPersonas(tipo)
+  );
+  const [vista, setVista] = useState('lista');
   const [personaEditando, setPersonaEditando] = useState(null);
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
   const [filtro, setFiltro] = useState('todos');
@@ -30,9 +31,21 @@ function PersonasAdmin({ tipo }) {
   const visibles =
     tipo === 'empleado' ? filtrarEmpleados(personas, filtro) : personas;
 
-  function recargar() {
-    setPersonas(listarPersonas(tipo));
-  }
+  const recargar = useCallback(async () => {
+    try {
+      const lista = await listarPersonasApi(tipo);
+      setPersonas(lista);
+      setError('');
+    } catch (err) {
+      setError(err.message || 'No se pudieron cargar los usuarios.');
+    }
+  }, [tipo]);
+
+  useEffect(() => {
+    if (obtenerToken()) {
+      recargar();
+    }
+  }, [recargar]);
 
   function abrirFormularioNuevo() {
     setMensaje('');
@@ -57,22 +70,38 @@ function PersonasAdmin({ tipo }) {
   }
 
   function manejarGuardado(valores) {
-    const claveOriginal = personaEditando ? claveDe(personaEditando) : null;
-    const resultado = guardarPersona(valores, tipo, claveOriginal);
-
-    if (resultado.ok) {
-      recargar();
-      setMensaje(claveOriginal ? config.actualizado : config.registrado);
-      volverALista();
+    if (!obtenerToken()) {
+      const claveOriginal = personaEditando ? claveDe(personaEditando) : null;
+      const resultado = guardarPersona(valores, tipo, claveOriginal);
+      if (resultado.ok) {
+        setPersonas(listarPersonas(tipo));
+        setMensaje(personaEditando ? config.actualizado : config.registrado);
+        volverALista();
+      }
+      return resultado;
     }
 
-    return resultado;
+    return guardarPersonaApi(valores, tipo, personaEditando).then(async (resultado) => {
+      if (resultado.ok) {
+        await recargar();
+        setMensaje(personaEditando ? config.actualizado : config.registrado);
+        volverALista();
+      }
+      return resultado;
+    });
   }
 
-  function confirmarEliminacion() {
+  async function confirmarEliminacion() {
     try {
-      borrarPersona(claveDe(personaEditando));
-      recargar();
+      if (!obtenerToken()) {
+        borrarPersona(claveDe(personaEditando));
+        setPersonas(listarPersonas(tipo));
+        setMensaje(config.eliminado);
+        volverALista();
+        return;
+      }
+      await borrarPersonaApi(personaEditando);
+      await recargar();
       setMensaje(config.eliminado);
       volverALista();
     } catch (errorEliminar) {

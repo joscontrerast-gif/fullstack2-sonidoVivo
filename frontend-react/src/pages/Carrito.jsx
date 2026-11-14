@@ -1,25 +1,34 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { obtenerToken } from '../services/api.js';
 import { obtenerProductos } from '../services/productos.js';
 import {
-  obtenerCarrito,
+  obtenerCarritoApi,
   cambiarCantidad,
+  cambiarCantidadApi,
   eliminarDelCarrito,
+  eliminarDelCarritoApi,
   vaciarCarrito,
+  vaciarCarritoApi,
 } from '../services/carrito.js';
+import Navbar from '../components/Navbar.jsx';
 
 function Carrito() {
   const [productos, setProductos] = useState([]);
-  const [carrito, setCarrito] = useState(() => obtenerCarrito());
+  const [carrito, setCarrito] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [mensaje, setMensaje] = useState('');
 
   useEffect(() => {
-    async function cargarProductos() {
+    async function cargarDatos() {
       try {
-        const datos = await obtenerProductos();
-        setProductos(datos);
+        const [datosProductos, datosCarrito] = await Promise.all([
+          obtenerProductos(),
+          obtenerCarritoApi(),
+        ]);
+        setProductos(datosProductos);
+        setCarrito(datosCarrito);
       } catch {
         setError('No se pudieron cargar los productos del catálogo.');
       } finally {
@@ -27,7 +36,7 @@ function Carrito() {
       }
     }
 
-    cargarProductos();
+    cargarDatos();
   }, []);
 
   const formatoPrecio = (precio) =>
@@ -60,8 +69,25 @@ function Carrito() {
     0
   );
 
-  function manejarCambioCantidad(producto, nuevaCantidad) {
-    const resultado = cambiarCantidad(
+  async function manejarCambioCantidad(producto, nuevaCantidad) {
+    if (!obtenerToken()) {
+      const resultado = cambiarCantidad(
+        producto.codigo,
+        nuevaCantidad,
+        Number(producto.stock)
+      );
+
+      if (!resultado.exito) {
+        setMensaje(resultado.mensaje);
+        return;
+      }
+
+      setCarrito(resultado.carrito);
+      setMensaje('');
+      return;
+    }
+
+    const resultado = await cambiarCantidadApi(
       producto.codigo,
       nuevaCantidad,
       Number(producto.stock)
@@ -76,15 +102,28 @@ function Carrito() {
     setMensaje('');
   }
 
-  function manejarEliminar(codigo) {
-    const nuevoCarrito = eliminarDelCarrito(codigo);
+  async function manejarEliminar(codigo) {
+    if (!obtenerToken()) {
+      const nuevoCarrito = eliminarDelCarrito(codigo);
+      setCarrito(nuevoCarrito);
+      setMensaje('Producto eliminado del carrito.');
+      return;
+    }
 
+    const nuevoCarrito = await eliminarDelCarritoApi(codigo);
     setCarrito(nuevoCarrito);
     setMensaje('Producto eliminado del carrito.');
   }
 
-  function manejarVaciarCarrito() {
-    vaciarCarrito();
+  async function manejarVaciarCarrito() {
+    if (!obtenerToken()) {
+      vaciarCarrito();
+      setCarrito([]);
+      setMensaje('El carrito se ha vaciado.');
+      return;
+    }
+
+    await vaciarCarritoApi();
     setCarrito([]);
     setMensaje('El carrito se ha vaciado.');
   }
@@ -99,17 +138,14 @@ function Carrito() {
 
   return (
     <>
-      <nav className="navbar navbar-dark bg-dark">
-        <div className="container">
-          <Link to="/" className="navbar-brand fw-bold">
-            Sonido Vivo
-          </Link>
-
-          <Link to="/" className="btn btn-outline-light">
+      <Navbar
+        mostrarCarrito={false}
+        enlaceExtra={
+          <Link to="/" className="btn btn-outline-light btn-sm">
             Seguir comprando
           </Link>
-        </div>
-      </nav>
+        }
+      />
 
       <main className="container py-4">
         <h1 className="fw-bold mb-4">Mi carrito</h1>
