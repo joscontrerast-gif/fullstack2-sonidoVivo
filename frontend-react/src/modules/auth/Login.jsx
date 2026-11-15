@@ -114,6 +114,7 @@ function Login() {
       </form>
 
       <p className="mt-3 mb-0">
+        ¿No tienes cuenta? <Link to="/registro">Regístrate</Link> ·{' '}
         <Link to="/">Volver a la tienda</Link>
       </p>
     </main>

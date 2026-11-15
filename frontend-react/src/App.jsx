@@ -11,6 +11,7 @@ import PanelAdmin from './modules/admin/pages/PanelAdmin.jsx';
 import EncargosAdmin from './modules/admin/pages/EncargosAdmin.jsx';
 import PersonasAdmin from './modules/admin/pages/PersonasAdmin.jsx';
 import Login from './modules/auth/Login.jsx';
+import Registro from './modules/auth/Registro.jsx';
 import RutaProtegida from './modules/auth/RutaProtegida.jsx';
 import { ROLES_PANEL, useAuth } from './modules/auth/AuthContext.jsx';
 
@@ -102,9 +103,14 @@ function Catalogo() {
                 </button>
               </>
             ) : (
-              <Link to="/login" className="btn btn-outline-light">
-                Ingresar
-              </Link>
+              <>
+                <Link to="/login" className="btn btn-outline-light">
+                  Ingresar
+                </Link>
+                <Link to="/registro" className="btn btn-outline-info">
+                  Registrarse
+                </Link>
+              </>
             )}
 
             <Link to="/carrito" className="btn btn-outline-light">
@@ -262,6 +268,7 @@ function App() {
       />
       <Route path="/carrito" element={<Carrito />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/registro" element={<Registro />} />
       <Route element={<RutaProtegida />}>
         <Route path="/admin" element={<LayoutAdmin />}>
           <Route index element={<DashboardAdmin />} />
