@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { obtenerProductos } from './services/productos.js';
 import Navbar from './components/Navbar.jsx';
@@ -26,7 +26,8 @@ function RutaAdmin({ children }) {
 function Catalogo() {
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
+  const [searchParams] = useSearchParams();
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(searchParams.get('categoria') || '');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
 
