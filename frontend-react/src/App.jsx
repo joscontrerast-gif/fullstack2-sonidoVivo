@@ -16,6 +16,7 @@ import PersonasAdmin from './modules/admin/pages/PersonasAdmin.jsx';
 import CompraExitosa from './modules/compra/pages/CompraExitosa.jsx';
 import CompraFallida from './modules/compra/pages/CompraFallida.jsx';
 import Home from './pages/Home.jsx';
+import Nosotros from './pages/Nosotros.jsx';
 
 function RutaAdmin({ children }) {
   const { autenticado, esAdmin } = useAuth();
@@ -239,6 +240,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/productos" element={<Catalogo />} />
+        <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route
