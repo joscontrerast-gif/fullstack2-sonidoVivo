@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import {
   EVENTO_CARRITO,
@@ -68,6 +68,13 @@ function Navbar({ mostrarCarrito = true, enlaceExtra = null }) {
         <Link className="navbar-brand fw-bold" to="/">
           Sonido Vivo
         </Link>
+
+        <div className="navbar-nav flex-row flex-wrap gap-3 me-auto ms-lg-4">
+          <NavLink to="/productos" end className="nav-link">Productos</NavLink>
+          <NavLink to="/nosotros" className="nav-link">Nosotros</NavLink>
+          <NavLink to="/blogs" className="nav-link">Blogs</NavLink>
+          <NavLink to="/contacto" className="nav-link">Contacto</NavLink>
+        </div>
 
         <div className="d-flex align-items-center flex-wrap gap-2">
           {esAdmin && (

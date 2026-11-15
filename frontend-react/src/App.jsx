@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useSearchParams } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { obtenerProductos } from './services/productos.js';
 import Navbar from './components/Navbar.jsx';
@@ -15,6 +15,11 @@ import EncargosAdmin from './modules/admin/pages/EncargosAdmin.jsx';
 import PersonasAdmin from './modules/admin/pages/PersonasAdmin.jsx';
 import CompraExitosa from './modules/compra/pages/CompraExitosa.jsx';
 import CompraFallida from './modules/compra/pages/CompraFallida.jsx';
+import Home from './pages/Home.jsx';
+import Nosotros from './pages/Nosotros.jsx';
+import Blogs from './pages/Blogs.jsx';
+import BlogDetalle from './pages/BlogDetalle.jsx';
+import Contacto from './pages/Contacto.jsx';
 
 function RutaAdmin({ children }) {
   const { autenticado, esAdmin } = useAuth();
@@ -25,7 +30,8 @@ function RutaAdmin({ children }) {
 function Catalogo() {
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
+  const [searchParams] = useSearchParams();
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState(searchParams.get('categoria') || '');
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
 
@@ -235,7 +241,12 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<Catalogo />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/productos" element={<Catalogo />} />
+        <Route path="/nosotros" element={<Nosotros />} />
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<BlogDetalle />} />
+        <Route path="/contacto" element={<Contacto />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route
@@ -273,4 +284,3 @@ function App() {
 }
 
 export default App;
-//dos mas dos 
