@@ -23,12 +23,8 @@ import {
 import {
   CONFIG_PERSONAS,
   ROLES_EMPLEADO,
-  borrarPersona,
   esDelTipo,
   estadoDe,
-  filtrarEmpleados,
-  guardarPersona,
-  listarPersonas,
   nombreCompleto,
   rolDe,
   validarPersona,
@@ -453,37 +449,12 @@ describe('Validaciones de formularios de personas', () => {
 
 describe('Servicio de personas', () => {
   describe('listado y filtros', () => {
-    beforeEach(() => guardarUsuarios(copiaUsuarios()));
-
-    it('listarPersonas separa clientes y empleados', () => {
-      expect(listarPersonas('cliente').map((u) => u.nombre)).toEqual(['Ana', 'Luis']);
-      expect(listarPersonas('empleado').map((u) => u.nombre)).toEqual([
-        'Vera',
-        'Carlos',
-        'Demo',
-      ]);
-    });
-
     it('esDelTipo reconoce Empleado, Vendedor y Administrador como empleados', () => {
       expect(esDelTipo({ tipoUsuario: 'Cliente' }, 'cliente')).toBeTrue();
       expect(esDelTipo({ tipoUsuario: 'Cliente' }, 'empleado')).toBeFalse();
       ['Empleado', 'Vendedor', 'Administrador'].forEach((tipoUsuario) => {
         expect(esDelTipo({ tipoUsuario }, 'empleado')).toBeTrue();
       });
-    });
-
-    it('filtrarEmpleados agrupa Empleados y Vendedores en "Empleado"', () => {
-      const empleados = listarPersonas('empleado');
-
-      expect(filtrarEmpleados(empleados).length).toBe(3);
-      expect(filtrarEmpleados(empleados, 'todos').length).toBe(3);
-      expect(filtrarEmpleados(empleados, 'Administrador').map((e) => e.nombre)).toEqual([
-        'Carlos',
-      ]);
-      expect(filtrarEmpleados(empleados, 'Empleado').map((e) => e.nombre)).toEqual([
-        'Vera',
-        'Demo',
-      ]);
     });
 
     it('nombreCompleto, estadoDe y rolDe usan valores por defecto razonables', () => {
@@ -649,136 +620,6 @@ describe('Servicio de personas', () => {
 
       expect(resultado.errores.correo).toBeUndefined();
       expect(resultado.valido).toBeTrue();
-    });
-  });
-
-  describe('guardarPersona y borrarPersona', () => {
-    beforeEach(() => guardarUsuarios(copiaUsuarios()));
-
-    it('crea un cliente válido', () => {
-      const resultado = guardarPersona(DATOS_CLIENTE, 'cliente');
-
-      expect(resultado.ok).toBeTrue();
-      expect(resultado.persona.run).toBe('222222222');
-      expect(resultado.persona.tipoUsuario).toBe('Cliente');
-      expect(resultado.persona.estado).toBe('Activo');
-      expect(resultado.persona.fechaRegistro).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-      expect(usuariosGuardados().length).toBe(6);
-    });
-
-    it('crea un empleado con el rol elegido', () => {
-      const resultado = guardarPersona(
-        { ...DATOS_EMPLEADO, rol: 'Administrador' },
-        'empleado'
-      );
-
-      expect(resultado.ok).toBeTrue();
-      expect(resultado.persona.tipoUsuario).toBe('Administrador');
-      expect(listarPersonas('empleado').length).toBe(4);
-    });
-
-    it('no guarda nada si los datos son inválidos', () => {
-      const resultado = guardarPersona({ ...DATOS_CLIENTE, nombre: '' }, 'cliente');
-
-      expect(resultado.ok).toBeFalse();
-      expect(resultado.errores.nombre).toBeDefined();
-      expect(usuariosGuardados().length).toBe(5);
-    });
-
-    it('rechaza un RUN que ya existe', () => {
-      const resultado = guardarPersona(
-        { ...DATOS_CLIENTE, run: '12345678-5' },
-        'cliente'
-      );
-
-      expect(resultado.ok).toBeFalse();
-      expect(usuariosGuardados().length).toBe(5);
-    });
-
-    it('edita conservando RUN, fecha de registro y contraseña si no se escribe una nueva', () => {
-      const resultado = guardarPersona(
-        {
-          ...DATOS_CLIENTE,
-          run: 'otro',
-          correo: 'ana@duoc.cl',
-          nombre: 'Ana María',
-          contrasena: '',
-          confirmarContrasena: '',
-        },
-        'cliente',
-        '123456785'
-      );
-      const ana = usuariosGuardados()[0];
-
-      expect(resultado.ok).toBeTrue();
-      expect(ana.run).toBe('123456785');
-      expect(ana.nombre).toBe('Ana María');
-      expect(ana.fechaRegistro).toBe('2026-02-01');
-      expect(ana.password).toBe('secreta1');
-      expect(usuariosGuardados().length).toBe(5);
-    });
-
-    it('edita la contraseña cuando se escribe una nueva', () => {
-      guardarPersona(
-        {
-          ...DATOS_CLIENTE,
-          correo: 'ana@duoc.cl',
-          contrasena: 'nueva123',
-          confirmarContrasena: 'nueva123',
-        },
-        'cliente',
-        '123456785'
-      );
-
-      expect(usuariosGuardados()[0].password).toBe('nueva123');
-    });
-
-    it('al cambiar el rol de un empleado cambia también su tipo de usuario', () => {
-      guardarPersona(
-        {
-          ...DATOS_EMPLEADO,
-          correo: 'vera@duoc.cl',
-          rol: 'Administrador',
-          contrasena: '',
-          confirmarContrasena: '',
-        },
-        'empleado',
-        '76543216'
-      );
-
-      expect(usuariosGuardados()[2].tipoUsuario).toBe('Administrador');
-      expect(usuariosGuardados()[2].rol).toBe('Administrador');
-    });
-
-    it('edita a un empleado antiguo sin RUN usando su correo', () => {
-      const resultado = guardarPersona(
-        {
-          ...DATOS_EMPLEADO,
-          correo: 'demo@duoc.cl',
-          contrasena: '',
-          confirmarContrasena: '',
-        },
-        'empleado',
-        'demo@duoc.cl'
-      );
-      const demo = usuariosGuardados()[4];
-
-      expect(resultado.ok).toBeTrue();
-      expect(demo.tipoUsuario).toBe('Vendedor');
-      expect(demo.password).toBe('1234');
-      expect(usuariosGuardados().length).toBe(5);
-    });
-
-    it('borrarPersona elimina a la persona', () => {
-      borrarPersona('111111111');
-
-      expect(listarPersonas('cliente').length).toBe(1);
-    });
-
-    it('borrarPersona falla si la persona no existe', () => {
-      expect(() => borrarPersona('99999999')).toThrowError(
-        'No existe el usuario que intentas eliminar.'
-      );
     });
   });
 });

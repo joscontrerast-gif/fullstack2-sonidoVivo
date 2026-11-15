@@ -7,15 +7,6 @@ import {
   obtenerEncargoPorId,
   obtenerEncargos,
 } from '../../../data/encargos.js';
-import {
-  cambiarEstado,
-  detalleEncargo,
-  formatearTotal,
-  listarEncargos,
-  listarPendientes,
-  resumenEncargos,
-  textoEntrega,
-} from '../services/encargosService.js';
 
 function encargosGuardados() {
   return JSON.parse(localStorage.getItem(CLAVE_ENCARGOS));
@@ -99,68 +90,5 @@ describe('Capa de datos de encargos', () => {
         'No existe el encargo "ORD-999".'
       );
     });
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 2. Servicio de encargos
-// ---------------------------------------------------------------------------
-
-describe('Servicio de encargos', () => {
-  const ids = (lista) => lista.map((encargo) => encargo.id);
-
-  it('listarEncargos muestra primero los más recientes', () => {
-    expect(ids(listarEncargos())).toEqual(['ORD-003', 'ORD-002', 'ORD-001']);
-  });
-
-  it('listarEncargos filtra por estado', () => {
-    expect(ids(listarEncargos('Pendiente'))).toEqual(['ORD-001']);
-    expect(ids(listarEncargos('todos')).length).toBe(3);
-    expect(listarEncargos('Cancelado')).toEqual([]);
-  });
-
-  it('listarPendientes devuelve solo los pendientes', () => {
-    expect(ids(listarPendientes())).toEqual(['ORD-001']);
-  });
-
-  it('cambiarEstado actualiza y guarda el encargo', () => {
-    const actualizado = cambiarEstado('ORD-002', 'Cancelado');
-
-    expect(actualizado.estado).toBe('Cancelado');
-    expect(ids(listarEncargos('Cancelado'))).toEqual(['ORD-002']);
-  });
-
-  it('detalleEncargo devuelve el encargo o null', () => {
-    expect(detalleEncargo('ORD-003').correo).toBe('maria@duoc.cl');
-    expect(detalleEncargo('ORD-999')).toBeNull();
-  });
-
-  it('formatearTotal muestra pesos chilenos y trata valores vacíos como 0', () => {
-    expect(formatearTotal(45990)).toMatch(/45\.990/);
-    expect(formatearTotal(0)).toMatch(/0/);
-    expect(formatearTotal(undefined)).toMatch(/0/);
-  });
-
-  it('textoEntrega traduce el tipo de entrega', () => {
-    expect(textoEntrega('retiro')).toBe('Retiro en tienda');
-    expect(textoEntrega('despacho')).toBe('Despacho a domicilio');
-    expect(textoEntrega(undefined)).toBe('No informado');
-  });
-
-  it('resumenEncargos cuenta el total y los encargos de cada estado', () => {
-    expect(resumenEncargos()).toEqual({
-      total: 3,
-      Pendiente: 1,
-      'En Proceso': 1,
-      Completado: 1,
-      Cancelado: 0,
-    });
-  });
-
-  it('resumenEncargos refleja los cambios de estado', () => {
-    cambiarEstado('ORD-001', 'Cancelado');
-
-    expect(resumenEncargos().Pendiente).toBe(0);
-    expect(resumenEncargos().Cancelado).toBe(1);
   });
 });

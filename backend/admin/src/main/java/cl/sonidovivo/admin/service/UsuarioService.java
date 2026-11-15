@@ -113,6 +113,16 @@ public class UsuarioService {
         return dtoIndividual(u);
     }
 
+    /** Elimina al usuario. Sus encargos se conservan (la columna id_usuario queda en NULL). */
+    @Transactional
+    public void eliminar(Long id, Long idQuienElimina) {
+        Usuario u = buscar(id);
+        if (id.equals(idQuienElimina)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "No puedes eliminar tu propia cuenta");
+        }
+        usuarios.delete(u);
+    }
+
     private Usuario buscar(Long id) {
         return usuarios.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));

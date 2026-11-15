@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import TablaEncargos from '../components/TablaEncargos.jsx';
 import {
   ESTADOS_ENCARGO,
@@ -10,30 +10,37 @@ import {
 
 function EncargosAdmin() {
   const [filtroEstado, setFiltroEstado] = useState('todos');
-  const [encargos, setEncargos] = useState(() => listarEncargos());
+  const [encargos, setEncargos] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [detalle, setDetalle] = useState(null);
   const [mensaje, setMensaje] = useState('');
   const [error, setError] = useState('');
 
-  function recargar(filtro = filtroEstado) {
-    setEncargos(listarEncargos(filtro));
-  }
+  const cargar = useCallback(async (filtro) => {
+    try {
+      setEncargos(await listarEncargos(filtro));
+    } catch (errorCarga) {
+      setError(errorCarga.message);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    cargar(filtroEstado);
+  }, [filtroEstado, cargar]);
 
   function manejarFiltro(evento) {
-    const filtro = evento.target.value;
-
-    setFiltroEstado(filtro);
-    recargar(filtro);
+    setFiltroEstado(evento.target.value);
   }
 
-  function manejarCambioEstado(id, nuevoEstado) {
+  async function manejarCambioEstado(id, nuevoEstado) {
     setMensaje('');
     setError('');
 
     try {
-      const actualizado = cambiarEstado(id, nuevoEstado);
+      const actualizado = await cambiarEstado(id, nuevoEstado);
 
-      recargar();
       setMensaje(
         `El estado del encargo ${id} fue actualizado a: ${nuevoEstado}`
       );
@@ -43,6 +50,9 @@ function EncargosAdmin() {
     } catch (errorCambio) {
       setError(errorCambio.message);
     }
+
+    // Se vuelve a leer para que la lista refleje lo que quedó en la base de datos
+    await cargar(filtroEstado);
   }
 
   return (
@@ -112,11 +122,15 @@ function EncargosAdmin() {
         </select>
       </div>
 
-      <TablaEncargos
-        encargos={encargos}
-        onCambiarEstado={manejarCambioEstado}
-        onVerDetalle={setDetalle}
-      />
+      {cargando ? (
+        <p role="status">Cargando encargos...</p>
+      ) : (
+        <TablaEncargos
+          encargos={encargos}
+          onCambiarEstado={manejarCambioEstado}
+          onVerDetalle={setDetalle}
+        />
+      )}
     </>
   );
 }

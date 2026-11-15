@@ -10,10 +10,12 @@ import DashboardAdmin from './modules/admin/pages/DashboardAdmin.jsx';
 import PanelAdmin from './modules/admin/pages/PanelAdmin.jsx';
 import EncargosAdmin from './modules/admin/pages/EncargosAdmin.jsx';
 import PersonasAdmin from './modules/admin/pages/PersonasAdmin.jsx';
-import CompraExitosa from './modules/compra/pages/CompraExitosa.jsx';
-import CompraFallida from './modules/compra/pages/CompraFallida.jsx';
+import Login from './modules/auth/Login.jsx';
+import RutaProtegida from './modules/auth/RutaProtegida.jsx';
+import { ROLES_PANEL, useAuth } from './modules/auth/AuthContext.jsx';
 
 function Catalogo() {
+  const { usuario, cerrarSesion } = useAuth();
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
@@ -83,6 +85,27 @@ function Catalogo() {
             <span className="navbar-text d-none d-sm-inline">
               Instrumentos y equipos musicales
             </span>
+
+            {usuario ? (
+              <>
+                {ROLES_PANEL.includes(usuario.rol) && (
+                  <Link to="/admin" className="btn btn-outline-warning">
+                    Administración
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  className="btn btn-outline-light"
+                  onClick={cerrarSesion}
+                >
+                  Salir
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="btn btn-outline-light">
+                Ingresar
+              </Link>
+            )}
 
             <Link to="/carrito" className="btn btn-outline-light">
               🛒 Carrito
@@ -238,23 +261,26 @@ function App() {
         element={<DetalleProducto />}
       />
       <Route path="/carrito" element={<Carrito />} />
-      <Route path="/admin" element={<LayoutAdmin />}>
-        <Route index element={<DashboardAdmin />} />
-        <Route path="productos" element={<PanelAdmin />} />
-        <Route path="encargos" element={<EncargosAdmin />} />
-        <Route
-          path="clientes"
-          element={<PersonasAdmin key="cliente" tipo="cliente" />}
-        />
-        <Route
-          path="empleados"
-          element={<PersonasAdmin key="empleado" tipo="empleado" />}
-        />
+      <Route path="/login" element={<Login />} />
+      <Route element={<RutaProtegida />}>
+        <Route path="/admin" element={<LayoutAdmin />}>
+          <Route index element={<DashboardAdmin />} />
+          <Route path="productos" element={<PanelAdmin />} />
+          <Route path="encargos" element={<EncargosAdmin />} />
+          <Route element={<RutaProtegida rolesPermitidos={['ADMINISTRADOR']} />}>
+            <Route
+              path="clientes"
+              element={<PersonasAdmin key="cliente" tipo="cliente" />}
+            />
+            <Route
+              path="empleados"
+              element={<PersonasAdmin key="empleado" tipo="empleado" />}
+            />
+          </Route>
+        </Route>
       </Route>
-      <Route path="/checkout" element={<Checkout />} />
-      <Route path="/compra-exitosa" element={<CompraExitosa />} />
-      <Route path="/compra-fallida" element={<CompraFallida />} />
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/checkout" element={<Checkout />} />
     </Routes>
   );
 }

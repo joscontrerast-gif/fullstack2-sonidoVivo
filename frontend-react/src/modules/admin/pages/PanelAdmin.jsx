@@ -101,9 +101,9 @@ function PanelAdmin() {
     const codigo = codigoDe(productoAEliminar);
 
     try {
-      await borrarProducto(codigo);
+      const respuesta = await borrarProducto(codigo);
       await cargarProductos();
-      setMensaje('Producto eliminado con éxito.');
+      setMensaje(respuesta?.mensaje || 'Producto eliminado con éxito.');
     } catch (errorEliminar) {
       setMensaje('');
       setError(errorEliminar.message);

@@ -1,14 +1,9 @@
 // Lógica del módulo administrativo: validaciones, helpers de presentación
-// y operaciones que orquestan la capa de datos (src/data/productos.js).
+// y operaciones que llaman al backend (admin-service) a través de src/api.
 
-import {
-  obtenerProductos,
-  crearProducto,
-  actualizarProducto,
-  eliminarProducto,
-  normalizarCodigo,
-  codigoDe,
-} from '../../../data/productos.js';
+import { productosApi } from '../../../api/adminApi.js';
+import { ErrorApi } from '../../../api/http.js';
+import { normalizarCodigo, codigoDe } from '../../../data/productos.js';
 
 export const CATEGORIAS_BASE = [
   'Accesorios',
@@ -154,16 +149,37 @@ export function validarProducto(
 // ---- Operaciones CRUD del panel ----
 
 export function listarProductos() {
-  return obtenerProductos();
+  return productosApi.listar();
+}
+
+// Convierte un error del servidor en el mismo formato { ok, errores } que usan
+// los formularios. Los errores sin campo (red, permisos...) se propagan.
+function resultadoDeError(error, campoConflicto) {
+  if (error instanceof ErrorApi) {
+    if (Object.keys(error.errores).length > 0) {
+      return { ok: false, errores: error.errores, producto: null };
+    }
+
+    if (error.estado === 409 && campoConflicto) {
+      return {
+        ok: false,
+        errores: { [campoConflicto]: error.message },
+        producto: null,
+      };
+    }
+  }
+
+  throw error;
 }
 
 /**
  * Crea un producto (codigoOriginal = null) o edita uno existente.
- * Si los datos no son válidos NO se guarda nada y se devuelven los errores.
+ * Si los datos no son válidos NO se llama al servidor y se devuelven los errores.
  */
 export async function guardarProducto(datos, codigoOriginal = null) {
   const modo = codigoOriginal ? 'editar' : 'crear';
-  const existentes = await obtenerProductos();
+  // Se incluyen los desactivados: su código sigue ocupado en la base de datos.
+  const existentes = await productosApi.listar({ todos: true });
   const datosFinales =
     modo === 'editar' ? { ...datos, codigo: codigoOriginal } : datos;
 
@@ -176,16 +192,21 @@ export async function guardarProducto(datos, codigoOriginal = null) {
     return { ok: false, errores: resultado.errores, producto: null };
   }
 
-  const producto =
-    modo === 'editar'
-      ? await actualizarProducto(codigoOriginal, resultado.producto)
-      : await crearProducto(resultado.producto);
+  try {
+    const producto =
+      modo === 'editar'
+        ? await productosApi.actualizar(codigoOriginal, resultado.producto)
+        : await productosApi.crear(resultado.producto);
 
-  return { ok: true, errores: {}, producto };
+    return { ok: true, errores: {}, producto };
+  } catch (error) {
+    return resultadoDeError(error, 'codigo');
+  }
 }
 
+// Devuelve { eliminado, mensaje }: un producto con ventas solo se desactiva.
 export function borrarProducto(codigo) {
-  return eliminarProducto(codigo);
+  return productosApi.eliminar(codigo);
 }
 
 // ---- Helpers de presentación y consulta ----

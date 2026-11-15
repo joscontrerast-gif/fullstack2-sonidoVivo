@@ -1,6 +1,7 @@
 package cl.sonidovivo.admin.service;
 
 import cl.sonidovivo.admin.dto.ProductoDto;
+import cl.sonidovivo.admin.dto.ProductoPublicoDto;
 import cl.sonidovivo.admin.dto.ProductoRequest;
 import cl.sonidovivo.admin.entity.Categoria;
 import cl.sonidovivo.admin.entity.Producto;
@@ -46,6 +47,23 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public ProductoDto obtener(String codigo) {
         return ProductoDto.de(buscar(codigo));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductoPublicoDto> listarPublico() {
+        return productos.findAll(Sort.by("codigo")).stream()
+                .filter(p -> Integer.valueOf(1).equals(p.getActivo()))
+                .map(ProductoPublicoDto::de)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ProductoPublicoDto obtenerPublico(String codigo) {
+        Producto p = buscar(codigo);
+        if (!Integer.valueOf(1).equals(p.getActivo())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado");
+        }
+        return ProductoPublicoDto.de(p);
     }
 
     @Transactional(readOnly = true)

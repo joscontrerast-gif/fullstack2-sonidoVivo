@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { claveDe } from '../../../data/usuarios.js';
 import FormularioPersona from '../components/FormularioPersona.jsx';
 import TablaPersonas from '../components/TablaPersonas.jsx';
@@ -19,7 +19,8 @@ import {
 function PersonasAdmin({ tipo }) {
   const config = CONFIG_PERSONAS[tipo];
 
-  const [personas, setPersonas] = useState(() => listarPersonas(tipo));
+  const [personas, setPersonas] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [vista, setVista] = useState('lista'); // 'lista' | 'formulario'
   const [personaEditando, setPersonaEditando] = useState(null);
   const [confirmandoEliminar, setConfirmandoEliminar] = useState(false);
@@ -30,9 +31,19 @@ function PersonasAdmin({ tipo }) {
   const visibles =
     tipo === 'empleado' ? filtrarEmpleados(personas, filtro) : personas;
 
-  function recargar() {
-    setPersonas(listarPersonas(tipo));
-  }
+  const recargar = useCallback(async () => {
+    try {
+      setPersonas(await listarPersonas(tipo));
+    } catch (errorCarga) {
+      setError(errorCarga.message);
+    } finally {
+      setCargando(false);
+    }
+  }, [tipo]);
+
+  useEffect(() => {
+    recargar();
+  }, [recargar]);
 
   function abrirFormularioNuevo() {
     setMensaje('');
@@ -56,12 +67,12 @@ function PersonasAdmin({ tipo }) {
     setVista('lista');
   }
 
-  function manejarGuardado(valores) {
+  async function manejarGuardado(valores) {
     const claveOriginal = personaEditando ? claveDe(personaEditando) : null;
-    const resultado = guardarPersona(valores, tipo, claveOriginal);
+    const resultado = await guardarPersona(valores, tipo, claveOriginal);
 
     if (resultado.ok) {
-      recargar();
+      await recargar();
       setMensaje(claveOriginal ? config.actualizado : config.registrado);
       volverALista();
     }
@@ -69,10 +80,10 @@ function PersonasAdmin({ tipo }) {
     return resultado;
   }
 
-  function confirmarEliminacion() {
+  async function confirmarEliminacion() {
     try {
-      borrarPersona(claveDe(personaEditando));
-      recargar();
+      await borrarPersona(personaEditando);
+      await recargar();
       setMensaje(config.eliminado);
       volverALista();
     } catch (errorEliminar) {
@@ -191,11 +202,15 @@ function PersonasAdmin({ tipo }) {
             </div>
           )}
 
-          <TablaPersonas
-            personas={visibles}
-            tipo={tipo}
-            onEditar={abrirFormularioEdicion}
-          />
+          {cargando ? (
+            <p role="status">Cargando {config.plural.toLowerCase()}...</p>
+          ) : (
+            <TablaPersonas
+              personas={visibles}
+              tipo={tipo}
+              onEditar={abrirFormularioEdicion}
+            />
+          )}
         </>
       )}
     </>

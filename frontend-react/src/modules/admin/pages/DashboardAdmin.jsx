@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import TablaEncargos from '../components/TablaEncargos.jsx';
 import {
@@ -9,8 +9,50 @@ import {
 
 // Pantalla de inicio del panel: resumen de encargos y pedidos pendientes.
 function DashboardAdmin() {
-  const [resumen] = useState(() => resumenEncargos());
-  const [pendientes] = useState(() => listarPendientes());
+  const [resumen, setResumen] = useState(null);
+  const [pendientes, setPendientes] = useState([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let activo = true;
+
+    Promise.all([resumenEncargos(), listarPendientes()])
+      .then(([datosResumen, datosPendientes]) => {
+        if (activo) {
+          setResumen(datosResumen);
+          setPendientes(datosPendientes);
+        }
+      })
+      .catch((errorCarga) => {
+        if (activo) {
+          setError(errorCarga.message);
+        }
+      });
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <>
+        <h1 className="fw-bold mb-4">Dashboard</h1>
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      </>
+    );
+  }
+
+  if (!resumen) {
+    return (
+      <>
+        <h1 className="fw-bold mb-4">Dashboard</h1>
+        <p role="status">Cargando resumen...</p>
+      </>
+    );
+  }
 
   return (
     <>

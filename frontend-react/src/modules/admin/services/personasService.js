@@ -1,15 +1,14 @@
 // Lógica de la administración de clientes y empleados.
-// Ambos viven en la misma lista de localStorage ("usuarios") y se
-// distinguen por el campo tipoUsuario, igual que en el sitio original.
+// Ambos son usuarios de la base de datos y se distinguen por su rol
+// (Cliente, Vendedor, Administrador). Los datos vienen del backend.
 
+import { ubicacionesApi } from '../../../api/authApi.js';
+import { usuariosApi } from '../../../api/adminApi.js';
+import { ErrorApi } from '../../../api/http.js';
 import {
-  actualizarUsuario,
   claveDe,
-  crearUsuario,
-  eliminarUsuario,
   normalizarClave,
   normalizarRun,
-  obtenerUsuarios,
 } from '../../../data/usuarios.js';
 import {
   LIMITES_PERSONA,
@@ -57,8 +56,63 @@ export function esDelTipo(usuario, tipo) {
     : TIPOS_EMPLEADO.includes(usuario.tipoUsuario);
 }
 
-export function listarPersonas(tipo) {
-  return obtenerUsuarios().filter((usuario) => esDelTipo(usuario, tipo));
+// Convierte un usuario del backend a la forma que usan los componentes.
+export function aPersona(dto) {
+  return {
+    id: dto.id,
+    run: dto.run ?? '',
+    nombre: dto.nombre,
+    apellidos: dto.apellidos ?? '',
+    correo: dto.correo,
+    tipoUsuario: dto.tipo,
+    rol: dto.tipo,
+    region: dto.region ?? '',
+    comuna: dto.comuna ?? '',
+    direccion: dto.direccion ?? '',
+    estado: dto.estado,
+    fechaRegistro: dto.fechaRegistro ? String(dto.fechaRegistro).slice(0, 10) : '',
+  };
+}
+
+export async function listarPersonas(tipo) {
+  const lista = await usuariosApi.listar(
+    tipo === 'cliente' ? 'clientes' : 'empleados'
+  );
+
+  return lista.map(aPersona);
+}
+
+// El formulario trabaja con nombres de región y comuna; el backend, con ids.
+let cacheUbicaciones = null;
+
+export function limpiarCacheUbicaciones() {
+  cacheUbicaciones = null;
+}
+
+async function resolverComuna(nombreRegion, nombreComuna) {
+  if (!cacheUbicaciones) {
+    const [regiones, comunas] = await Promise.all([
+      ubicacionesApi.regiones(),
+      ubicacionesApi.comunas(),
+    ]);
+
+    cacheUbicaciones = { regiones, comunas };
+  }
+
+  const igual = (a, b) =>
+    String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+  const region = cacheUbicaciones.regiones.find((r) =>
+    igual(r.nombre, nombreRegion)
+  );
+  const comuna = cacheUbicaciones.comunas.find(
+    (c) => c.idRegion === region?.id && igual(c.nombre, nombreComuna)
+  );
+
+  if (!comuna) {
+    throw new Error('La región o comuna seleccionada no existe en la base de datos.');
+  }
+
+  return comuna.id;
 }
 
 // Filtro de la lista de empleados: 'todos' | 'Administrador' | 'Empleado'
@@ -212,16 +266,34 @@ export function validarPersona(
   return { valido, errores: {}, persona };
 }
 
+// Errores del servidor → errores por campo del formulario.
+function resultadoDeError(error) {
+  if (error instanceof ErrorApi) {
+    if (Object.keys(error.errores).length > 0) {
+      return { ok: false, errores: error.errores, persona: null };
+    }
+
+    if (error.estado === 409) {
+      const campo = /correo/i.test(error.message) ? 'correo' : 'run';
+
+      return { ok: false, errores: { [campo]: error.message }, persona: null };
+    }
+  }
+
+  throw error;
+}
+
 /**
  * Crea (claveOriginal = null) o edita una persona.
- * Si los datos no son válidos NO se guarda nada y se devuelven los errores.
+ * Si los datos no son válidos NO se llama al servidor y se devuelven los errores.
  */
-export function guardarPersona(datos, tipo, claveOriginal = null) {
+export async function guardarPersona(datos, tipo, claveOriginal = null) {
   const modo = claveOriginal ? 'editar' : 'crear';
+  const existentes = (await usuariosApi.listar()).map(aPersona);
   const resultado = validarPersona(datos, {
     tipo,
     modo,
-    existentes: obtenerUsuarios(),
+    existentes,
     claveOriginal,
   });
 
@@ -229,14 +301,44 @@ export function guardarPersona(datos, tipo, claveOriginal = null) {
     return { ok: false, errores: resultado.errores, persona: null };
   }
 
-  const persona =
-    modo === 'editar'
-      ? actualizarUsuario(claveOriginal, resultado.persona)
-      : crearUsuario(resultado.persona);
+  const persona = resultado.persona;
+  let original = null;
 
-  return { ok: true, errores: {}, persona };
+  if (modo === 'editar') {
+    const clave = normalizarClave(claveOriginal);
+
+    original = existentes.find((existente) => claveDe(existente) === clave);
+
+    if (!original) {
+      throw new Error('El usuario ya no existe.');
+    }
+  }
+
+  const cuerpo = {
+    run: original ? original.run || undefined : persona.run,
+    nombre: persona.nombre,
+    apellidos: persona.apellidos,
+    correo: persona.correo,
+    password: persona.password,
+    tipo: persona.tipoUsuario,
+    idComuna: await resolverComuna(persona.region, persona.comuna),
+    direccion: persona.direccion,
+    estado: original ? original.estado : 'Activo',
+  };
+
+  try {
+    const guardada =
+      modo === 'editar'
+        ? await usuariosApi.actualizar(original.id, cuerpo)
+        : await usuariosApi.crear(cuerpo);
+
+    return { ok: true, errores: {}, persona: aPersona(guardada) };
+  } catch (error) {
+    return resultadoDeError(error);
+  }
 }
 
-export function borrarPersona(clave) {
-  return eliminarUsuario(clave);
+// Elimina a la persona (objeto con su id, como lo entrega listarPersonas).
+export function borrarPersona(persona) {
+  return usuariosApi.eliminar(persona.id);
 }

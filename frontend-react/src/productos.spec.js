@@ -1,4 +1,5 @@
 
+import { URL_ADMIN } from './api/config.js';
 import { obtenerProductos } from './services/productos.js';
 
 describe('obtenerProductos', () => {
@@ -25,7 +26,10 @@ describe('obtenerProductos', () => {
 
     const resultado = await obtenerProductos();
 
-    expect(globalThis.fetch).toHaveBeenCalledWith('/data/productos.json');
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      `${URL_ADMIN}/api/productos`,
+      jasmine.objectContaining({ method: 'GET' })
+    );
     expect(resultado).toEqual(productos);
   });
 
@@ -33,6 +37,15 @@ describe('obtenerProductos', () => {
     globalThis.fetch = jasmine.createSpy('fetch').and.resolveTo({
       ok: false
     });
+
+    await expectAsync(obtenerProductos())
+      .toBeRejectedWithError('No se pudieron cargar los productos');
+  });
+
+  it('debe lanzar el mismo error cuando no hay conexión con el servidor', async () => {
+    globalThis.fetch = jasmine
+      .createSpy('fetch')
+      .and.rejectWith(new TypeError('Failed to fetch'));
 
     await expectAsync(obtenerProductos())
       .toBeRejectedWithError('No se pudieron cargar los productos');
