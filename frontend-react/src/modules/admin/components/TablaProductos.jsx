@@ -16,6 +16,7 @@ function TablaProductos({ productos, onEditar, onEliminar }) {
         <thead>
           <tr>
             <th scope="col">Fecha ingreso</th>
+            <th scope="col">Imagen</th>
             <th scope="col">Código</th>
             <th scope="col">Nombre</th>
             <th scope="col">Categoría</th>
@@ -38,6 +39,22 @@ function TablaProductos({ productos, onEditar, onEliminar }) {
             return (
               <tr key={codigo}>
                 <td>{producto.fechaIngreso || '—'}</td>
+                <td>
+                  {producto.imagen ? (
+                    <img
+                      src={producto.imagen}
+                      alt={nombreCompleto}
+                      className="rounded border bg-light"
+                      style={{
+                        width: '44px',
+                        height: '44px',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  ) : (
+                    '—'
+                  )}
+                </td>
                 <td>{codigo}</td>
                 <td>{nombreCompleto}</td>
                 <td>{producto.categoria}</td>

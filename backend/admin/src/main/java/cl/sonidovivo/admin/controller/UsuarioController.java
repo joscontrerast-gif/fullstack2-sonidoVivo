@@ -7,7 +7,6 @@ import cl.sonidovivo.admin.service.UsuarioService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,12 +49,5 @@ public class UsuarioController {
     public UsuarioDto actualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequest r,
                                  @RequestAttribute(AuthInterceptor.ATTR_USUARIO_ID) Long idQuienEdita) {
         return servicio.actualizar(id, r, idQuienEdita);
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id,
-                         @RequestAttribute(AuthInterceptor.ATTR_USUARIO_ID) Long idQuienElimina) {
-        servicio.eliminar(id, idQuienElimina);
     }
 }

@@ -1,77 +1,32 @@
-// Lógica del módulo de encargos (órdenes de compra) y del dashboard.
-// Los datos vienen del backend (admin-service) a través de src/api.
-
-import { dashboardApi, encargosApi } from '../../../api/adminApi.js';
-import { ESTADOS_ENCARGO } from '../../../data/encargos.js';
+import { URLS, apiFetch, obtenerToken } from '../../../services/api.js';
+import {
+  ESTADOS_ENCARGO,
+  actualizarEstadoEncargo,
+  obtenerEncargoPorId,
+  obtenerEncargos,
+} from '../../../data/encargos.js';
 
 export { ESTADOS_ENCARGO };
 
-// El panel muestra el N° de orden ("ORD-001"); el backend identifica cada
-// encargo con un id numérico. Esta tabla recuerda la equivalencia.
-const idsPorOrden = new Map();
+// --- Funciones síncronas (tests unitarios encargos.spec.js) ---
 
-export function limpiarCacheEncargos() {
-  idsPorOrden.clear();
-}
-
-// Convierte un encargo del backend a la forma que usan los componentes.
-export function aEncargo(dto) {
-  idsPorOrden.set(dto.numeroOrden, dto.id);
-
-  return {
-    id: dto.numeroOrden,
-    idApi: dto.id,
-    fecha: String(dto.fecha ?? '').slice(0, 10),
-    cliente: dto.cliente,
-    correo: dto.correo,
-    total: dto.total,
-    estado: dto.estado,
-    tipoEntrega:
-      dto.tipoEntrega === 'Retiro en tienda' ? 'retiro' : dto.tipoEntrega,
-    items: dto.items ?? [],
-  };
-}
-
-// Más recientes primero (así los entrega el backend).
-// Se puede filtrar por estado ('todos' muestra todos).
-export async function listarEncargos(filtroEstado = 'todos') {
-  const lista = await encargosApi.listar(
-    filtroEstado === 'todos' ? undefined : filtroEstado
+export function listarEncargos(filtroEstado = 'todos') {
+  const encargos = obtenerEncargos().filter(
+    (encargo) => filtroEstado === 'todos' || encargo.estado === filtroEstado
   );
-
-  return lista.map(aEncargo);
+  return [...encargos].reverse();
 }
 
 export function listarPendientes() {
   return listarEncargos('Pendiente');
 }
 
-export async function cambiarEstado(id, nuevoEstado) {
-  if (!ESTADOS_ENCARGO.includes(nuevoEstado)) {
-    throw new Error(`El estado "${nuevoEstado}" no es válido.`);
-  }
-
-  if (!idsPorOrden.has(id)) {
-    await listarEncargos();
-  }
-
-  const idApi = idsPorOrden.get(id);
-
-  if (idApi === undefined) {
-    throw new Error(`No existe el encargo "${id}".`);
-  }
-
-  return aEncargo(await encargosApi.cambiarEstado(idApi, nuevoEstado));
+export function cambiarEstado(id, nuevoEstado) {
+  return actualizarEstadoEncargo(id, nuevoEstado);
 }
 
-export async function detalleEncargo(id) {
-  if (!idsPorOrden.has(id)) {
-    await listarEncargos();
-  }
-
-  const idApi = idsPorOrden.get(id);
-
-  return idApi === undefined ? null : aEncargo(await encargosApi.obtener(idApi));
+export function detalleEncargo(id) {
+  return obtenerEncargoPorId(id);
 }
 
 export function formatearTotal(total) {
@@ -83,20 +38,76 @@ export function formatearTotal(total) {
 }
 
 export function textoEntrega(tipoEntrega) {
-  if (tipoEntrega === 'retiro') return 'Retiro en tienda';
-  if (String(tipoEntrega).startsWith('Entrega')) return tipoEntrega;
-  if (tipoEntrega) return 'Despacho a domicilio';
-
-  return 'No informado';
+  if (!tipoEntrega) return 'No informado';
+  const val = String(tipoEntrega).toLowerCase();
+  if (val.includes('retiro')) return 'Retiro en tienda';
+  return 'Despacho a domicilio';
 }
 
-// Cantidad de encargos por estado, para el dashboard
-export async function resumenEncargos() {
-  const datos = await dashboardApi.resumen();
-  const resumen = { total: datos.totalEncargos };
+export function resumenEncargos() {
+  const encargos = obtenerEncargos();
+  const resumen = { total: encargos.length };
 
   ESTADOS_ENCARGO.forEach((estado) => {
-    resumen[estado] = datos.encargosPorEstado?.[estado] ?? 0;
+    resumen[estado] = encargos.filter((e) => e.estado === estado).length;
+  });
+
+  return resumen;
+}
+
+// --- Funciones conectadas al microservicio admin (8082) ---
+
+function normalizarEncargoBackend(e) {
+  return {
+    ...e,
+    fecha: e.fecha ? new Date(e.fecha).toLocaleString('es-CL') : '—',
+  };
+}
+
+export async function listarEncargosApi(filtroEstado = 'todos') {
+  if (!obtenerToken()) {
+    return listarEncargos(filtroEstado);
+  }
+  const path =
+    filtroEstado && filtroEstado !== 'todos'
+      ? `/api/admin/encargos?estado=${encodeURIComponent(filtroEstado)}`
+      : '/api/admin/encargos';
+
+  const lista = await apiFetch(URLS.admin, path);
+  return (Array.isArray(lista) ? lista : []).map(normalizarEncargoBackend);
+}
+
+export async function listarPendientesApi() {
+  if (!obtenerToken()) {
+    return listarPendientes();
+  }
+  return await listarEncargosApi('Pendiente');
+}
+
+export async function cambiarEstadoApi(id, nuevoEstado) {
+  if (!obtenerToken()) {
+    return cambiarEstado(id, nuevoEstado);
+  }
+  const actualizado = await apiFetch(
+    URLS.admin,
+    `/api/admin/encargos/${encodeURIComponent(id)}/estado`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ estado: nuevoEstado }),
+    }
+  );
+  return normalizarEncargoBackend(actualizado);
+}
+
+export async function resumenEncargosApi() {
+  if (!obtenerToken()) {
+    return resumenEncargos();
+  }
+  const encargos = await listarEncargosApi('todos');
+  const resumen = { total: encargos.length };
+
+  ESTADOS_ENCARGO.forEach((estado) => {
+    resumen[estado] = encargos.filter((e) => e.estado === estado).length;
   });
 
   return resumen;

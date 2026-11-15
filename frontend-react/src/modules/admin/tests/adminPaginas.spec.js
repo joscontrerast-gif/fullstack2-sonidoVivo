@@ -8,15 +8,9 @@ import {
 import { MemoryRouter } from 'react-router-dom';
 
 import App from '../../../App.jsx';
-import { dashboardApi, encargosApi, usuariosApi } from '../../../api/adminApi.js';
-import { ErrorApi, EVENTO_SESION_EXPIRADA } from '../../../api/http.js';
-import { borrarSesion, guardarSesion, leerSesion } from '../../../api/sesion.js';
-import {
-  instalarEncargosFalsos,
-  instalarProductosFalsos,
-  instalarUsuariosFalsos,
-} from '../../../tests/baseFalsa.js';
-import { AuthProvider } from '../../auth/AuthContext.jsx';
+import { guardarEncargos } from '../../../data/encargos.js';
+import { guardarProductos } from '../../../data/productos.js';
+import { CLAVE_USUARIOS, guardarUsuarios } from '../../../data/usuarios.js';
 import DashboardAdmin from '../pages/DashboardAdmin.jsx';
 import EncargosAdmin from '../pages/EncargosAdmin.jsx';
 import PersonasAdmin from '../pages/PersonasAdmin.jsx';
@@ -146,6 +140,14 @@ function completar(valores, etiquetas = ETIQUETAS) {
       target: { value: valor },
     });
   });
+}
+
+function usuariosGuardados() {
+  return JSON.parse(localStorage.getItem(CLAVE_USUARIOS));
+}
+
+function encargosGuardados() {
+  return JSON.parse(localStorage.getItem('listaEncargos'));
 }
 
 function boton(nombre) {
@@ -432,8 +434,6 @@ describe('FormularioPersona', () => {
 // ---------------------------------------------------------------------------
 
 describe('DashboardAdmin', () => {
-  let bd;
-
   function renderizar() {
     return render(
       <MemoryRouter>
@@ -442,15 +442,12 @@ describe('DashboardAdmin', () => {
     );
   }
 
-  beforeEach(() => {
-    bd = instalarEncargosFalsos(ENCARGOS);
-  });
+  beforeEach(() => guardarEncargos(JSON.parse(JSON.stringify(ENCARGOS))));
 
-  it('muestra el resumen de encargos por estado', async () => {
+  it('muestra el resumen de encargos por estado', () => {
     renderizar();
 
     expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeTruthy();
-    expect(await screen.findByTestId('resumen-encargos-total')).toBeTruthy();
     expect(screen.getByTestId('resumen-encargos-total').textContent).toBe('3');
     expect(screen.getByTestId('resumen-encargos-Pendiente').textContent).toBe('1');
     expect(screen.getByTestId('resumen-encargos-En Proceso').textContent).toBe('1');
@@ -458,132 +455,84 @@ describe('DashboardAdmin', () => {
     expect(screen.getByTestId('resumen-encargos-Cancelado').textContent).toBe('0');
   });
 
-  it('lista solo los pedidos pendientes', async () => {
+  it('lista solo los pedidos pendientes', () => {
     renderizar();
 
-    expect(await screen.findByText('ORD-001')).toBeTruthy();
+    expect(screen.getByText('ORD-001')).toBeTruthy();
     expect(screen.queryByText('ORD-002')).toBeNull();
     expect(screen.queryByText('ORD-003')).toBeNull();
   });
 
-  it('avisa cuando no hay pedidos pendientes', async () => {
-    bd[0].estado = 'Completado';
+  it('avisa cuando no hay pedidos pendientes', () => {
+    guardarEncargos([{ ...ENCARGOS[2] }]);
 
     renderizar();
 
-    expect(
-      await screen.findByText('No hay pedidos pendientes actualmente.')
-    ).toBeTruthy();
+    expect(screen.getByText('No hay pedidos pendientes actualmente.')).toBeTruthy();
   });
 
-  it('enlaza a la lista completa de encargos', async () => {
+  it('enlaza a la lista completa de encargos', () => {
     renderizar();
 
     expect(
-      (await screen.findByRole('link', { name: 'Ver todos los encargos' })).getAttribute('href')
+      screen.getByRole('link', { name: 'Ver todos los encargos' }).getAttribute('href')
     ).toBe('/admin/encargos');
-  });
-
-  it('informa el error si no se puede cargar el resumen', async () => {
-    dashboardApi.resumen.and.rejectWith(new Error('No se pudo conectar con el servidor'));
-
-    renderizar();
-
-    expect(
-      await screen.findByText('No se pudo conectar con el servidor')
-    ).toBeTruthy();
   });
 });
 
 describe('EncargosAdmin', () => {
-  let bd;
+  beforeEach(() => guardarEncargos(JSON.parse(JSON.stringify(ENCARGOS))));
 
-  beforeEach(() => {
-    bd = instalarEncargosFalsos(ENCARGOS);
-  });
-
-  it('lista los encargos con los más recientes primero', async () => {
+  it('lista los encargos con los más recientes primero', () => {
     render(<EncargosAdmin />);
 
-    const filas = await screen.findAllByRole('row');
+    const filas = screen.getAllByRole('row');
 
     expect(within(filas[1]).getByText('ORD-003')).toBeTruthy();
     expect(within(filas[3]).getByText('ORD-001')).toBeTruthy();
   });
 
-  it('informa el error si no se pueden cargar los encargos', async () => {
-    encargosApi.listar.and.rejectWith(new Error('No se pudo conectar con el servidor'));
-
+  it('filtra por estado', () => {
     render(<EncargosAdmin />);
 
-    expect(
-      await screen.findByText('No se pudo conectar con el servidor')
-    ).toBeTruthy();
-  });
-
-  it('filtra por estado', async () => {
-    render(<EncargosAdmin />);
-
-    fireEvent.change(await screen.findByLabelText('Filtrar por estado'), {
+    fireEvent.change(screen.getByLabelText('Filtrar por estado'), {
       target: { value: 'Pendiente' },
     });
 
-    await waitFor(() =>
-      expect(screen.queryByLabelText('Estado de ORD-002')).toBeNull()
-    );
     expect(screen.getByLabelText('Estado de ORD-001')).toBeTruthy();
-    expect(encargosApi.listar).toHaveBeenCalledWith('Pendiente');
+    expect(screen.queryByLabelText('Estado de ORD-002')).toBeNull();
   });
 
-  it('avisa cuando ningún encargo tiene el estado elegido', async () => {
+  it('avisa cuando ningún encargo tiene el estado elegido', () => {
     render(<EncargosAdmin />);
 
-    fireEvent.change(await screen.findByLabelText('Filtrar por estado'), {
+    fireEvent.change(screen.getByLabelText('Filtrar por estado'), {
       target: { value: 'Cancelado' },
     });
 
-    expect(await screen.findByText('No hay encargos registrados.')).toBeTruthy();
+    expect(screen.getByText('No hay encargos registrados.')).toBeTruthy();
   });
 
-  it('cambia el estado de un encargo y lo guarda en el servidor', async () => {
+  it('cambia el estado de un encargo y lo guarda', () => {
     render(<EncargosAdmin />);
 
-    fireEvent.change(await screen.findByLabelText('Estado de ORD-001'), {
+    fireEvent.change(screen.getByLabelText('Estado de ORD-001'), {
       target: { value: 'Completado' },
     });
 
     expect(
-      await screen.findByText('El estado del encargo ORD-001 fue actualizado a: Completado')
+      screen.getByText('El estado del encargo ORD-001 fue actualizado a: Completado')
     ).toBeTruthy();
-    await waitFor(() =>
-      expect(screen.getByLabelText('Estado de ORD-001').value).toBe('Completado')
-    );
-    expect(encargosApi.cambiarEstado).toHaveBeenCalledWith(1, 'Completado');
-    expect(bd.find((e) => e.numeroOrden === 'ORD-001').estado).toBe('Completado');
-  });
-
-  it('muestra el error si el servidor rechaza el cambio y deja el estado anterior', async () => {
-    encargosApi.cambiarEstado.and.rejectWith(
-      new ErrorApi('Un encargo completado ya no puede cambiar de estado', 409)
-    );
-    render(<EncargosAdmin />);
-
-    fireEvent.change(await screen.findByLabelText('Estado de ORD-003'), {
-      target: { value: 'Pendiente' },
-    });
-
-    expect(
-      await screen.findByText('Un encargo completado ya no puede cambiar de estado')
-    ).toBeTruthy();
-    await waitFor(() =>
-      expect(screen.getByLabelText('Estado de ORD-003').value).toBe('Completado')
+    expect(screen.getByLabelText('Estado de ORD-001').value).toBe('Completado');
+    expect(encargosGuardados().find((e) => e.id === 'ORD-001').estado).toBe(
+      'Completado'
     );
   });
 
-  it('muestra el detalle de un encargo y se puede cerrar', async () => {
+  it('muestra el detalle de un encargo y se puede cerrar', () => {
     render(<EncargosAdmin />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Ver detalle ORD-002' }));
+    fireEvent.click(boton('Ver detalle ORD-002'));
 
     expect(
       screen.getByRole('heading', { name: 'Detalle de la orden ORD-002' })
@@ -598,10 +547,10 @@ describe('EncargosAdmin', () => {
     ).toBeNull();
   });
 
-  it('el detalle indica N/A si no hay correo y "No informado" si no hay entrega', async () => {
+  it('el detalle indica N/A si no hay correo y "No informado" si no hay entrega', () => {
     render(<EncargosAdmin />);
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Ver detalle ORD-003' }));
+    fireEvent.click(boton('Ver detalle ORD-003'));
 
     expect(screen.getByText('N/A')).toBeTruthy();
     expect(screen.getByText('No informado')).toBeTruthy();
@@ -609,124 +558,85 @@ describe('EncargosAdmin', () => {
 });
 
 describe('PersonasAdmin - clientes', () => {
-  let bd;
+  beforeEach(() => guardarUsuarios(JSON.parse(JSON.stringify(USUARIOS))));
 
-  const botonLista = (nombre) => screen.findByRole('button', { name: nombre });
-
-  beforeEach(() => {
-    bd = instalarUsuariosFalsos(USUARIOS);
-  });
-
-  it('lista solo a los clientes', async () => {
+  it('lista solo a los clientes', () => {
     render(<PersonasAdmin tipo="cliente" />);
 
     expect(screen.getByRole('heading', { name: 'Clientes' })).toBeTruthy();
-    expect(await screen.findByText('Ana Torres')).toBeTruthy();
+    expect(screen.getByText('Ana Torres')).toBeTruthy();
     expect(screen.getByText('Luis Soto')).toBeTruthy();
     expect(screen.queryByText('Vera Rojas')).toBeNull();
   });
 
-  it('avisa si no hay clientes', async () => {
-    bd.length = 0;
+  it('avisa si no hay clientes', () => {
+    guardarUsuarios([]);
 
     render(<PersonasAdmin tipo="cliente" />);
 
     expect(
-      await screen.findByText('No hay clientes registrados en el sistema.')
+      screen.getByText('No hay clientes registrados en el sistema.')
     ).toBeTruthy();
   });
 
-  it('informa el error si no se pueden cargar los clientes', async () => {
-    usuariosApi.listar.and.rejectWith(new Error('No se pudo conectar con el servidor'));
-
+  it('crea un cliente desde el formulario', () => {
     render(<PersonasAdmin tipo="cliente" />);
 
-    expect(
-      await screen.findByText('No se pudo conectar con el servidor')
-    ).toBeTruthy();
-  });
-
-  it('crea un cliente desde el formulario', async () => {
-    render(<PersonasAdmin tipo="cliente" />);
-
-    fireEvent.click(await botonLista('Nuevo cliente'));
+    fireEvent.click(boton('Nuevo cliente'));
     completar(CLIENTE_NUEVO);
     fireEvent.click(boton('Guardar'));
 
-    expect(await screen.findByText('Cliente registrado con éxito.')).toBeTruthy();
-    expect(await screen.findByText('María Pérez Díaz')).toBeTruthy();
+    expect(screen.getByText('Cliente registrado con éxito.')).toBeTruthy();
+    expect(screen.getByText('María Pérez Díaz')).toBeTruthy();
 
-    const guardado = bd.find((u) => u.run === '222222222');
+    const guardado = usuariosGuardados().find((u) => u.run === '222222222');
 
-    expect(guardado.tipo).toBe('Cliente');
-    expect(usuariosApi.crear.calls.mostRecent().args[0].password).toBe('abcdef');
+    expect(guardado.tipoUsuario).toBe('Cliente');
+    expect(guardado.password).toBe('abcdef');
   });
 
-  it('valida el formulario y no llama al servidor si faltan datos', async () => {
+  it('valida el formulario y no guarda si faltan datos', async () => {
     render(<PersonasAdmin tipo="cliente" />);
 
-    fireEvent.click(await botonLista('Nuevo cliente'));
+    fireEvent.click(boton('Nuevo cliente'));
     fireEvent.click(boton('Guardar'));
 
     expect(await screen.findByText('El RUN es obligatorio.')).toBeTruthy();
     expect(screen.getByText('Debes seleccionar una región.')).toBeTruthy();
     expect(screen.getByText('La contraseña es obligatoria.')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Nuevo cliente' })).toBeTruthy();
-    expect(usuariosApi.crear).not.toHaveBeenCalled();
-    expect(bd.length).toBe(5);
+    expect(usuariosGuardados().length).toBe(5);
   });
 
   it('rechaza un RUN con dígito verificador incorrecto', async () => {
     render(<PersonasAdmin tipo="cliente" />);
 
-    fireEvent.click(await botonLista('Nuevo cliente'));
+    fireEvent.click(boton('Nuevo cliente'));
     completar({ ...CLIENTE_NUEVO, run: '12345678-9' });
     fireEvent.click(boton('Guardar'));
 
     expect(await screen.findByText('El RUN ingresado no es válido.')).toBeTruthy();
-    expect(bd.length).toBe(5);
+    expect(usuariosGuardados().length).toBe(5);
   });
 
   it('rechaza un RUN que ya está registrado', async () => {
     render(<PersonasAdmin tipo="cliente" />);
 
-    fireEvent.click(await botonLista('Nuevo cliente'));
+    fireEvent.click(boton('Nuevo cliente'));
     completar({ ...CLIENTE_NUEVO, run: '12345678-5' });
     fireEvent.click(boton('Guardar'));
 
     expect(
-      (await screen.findAllByText('El RUN o Correo ya se encuentra registrado.')).length
+      (await screen.findAllByText('El RUN o Correo ya se encuentra registrado.'))
+        .length
     ).toBe(2);
-    expect(bd.length).toBe(5);
+    expect(usuariosGuardados().length).toBe(5);
   });
 
-  it('muestra el error del servidor cuando el correo ya existe allá', async () => {
-    usuariosApi.crear.and.rejectWith(new ErrorApi('Ya existe un usuario con ese correo', 409));
+  it('edita un cliente y conserva su contraseña si no se escribe otra', () => {
     render(<PersonasAdmin tipo="cliente" />);
 
-    fireEvent.click(await botonLista('Nuevo cliente'));
-    completar(CLIENTE_NUEVO);
-    fireEvent.click(boton('Guardar'));
-
-    expect(await screen.findByText('Ya existe un usuario con ese correo')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Nuevo cliente' })).toBeTruthy();
-  });
-
-  it('muestra un aviso si no hay conexión al guardar', async () => {
-    usuariosApi.crear.and.rejectWith(new ErrorApi('No se pudo conectar con el servidor', 0));
-    render(<PersonasAdmin tipo="cliente" />);
-
-    fireEvent.click(await botonLista('Nuevo cliente'));
-    completar(CLIENTE_NUEVO);
-    fireEvent.click(boton('Guardar'));
-
-    expect(await screen.findByText('No se pudo conectar con el servidor')).toBeTruthy();
-  });
-
-  it('edita un cliente sin enviar contraseña si no se escribe otra', async () => {
-    render(<PersonasAdmin tipo="cliente" />);
-
-    fireEvent.click(await botonLista('Editar 123456785'));
+    fireEvent.click(boton('Editar 123456785'));
 
     expect(screen.getByRole('heading', { name: 'Editar cliente' })).toBeTruthy();
 
@@ -735,93 +645,67 @@ describe('PersonasAdmin - clientes', () => {
     });
     fireEvent.click(boton('Guardar cambios'));
 
-    expect(await screen.findByText('Cliente actualizado con éxito.')).toBeTruthy();
-    expect(await screen.findByText('Ana María Torres')).toBeTruthy();
-
-    const [id, cuerpo] = usuariosApi.actualizar.calls.mostRecent().args;
-
-    expect(id).toBe(1);
-    expect(cuerpo.password).toBeUndefined();
-    expect(cuerpo.run).toBe('123456785');
+    expect(screen.getByText('Cliente actualizado con éxito.')).toBeTruthy();
+    expect(screen.getByText('Ana María Torres')).toBeTruthy();
+    expect(usuariosGuardados()[0].password).toBe('secreta1');
+    expect(usuariosGuardados()[0].run).toBe('123456785');
   });
 
-  it('elimina un cliente solo después de confirmar', async () => {
+  it('elimina un cliente solo después de confirmar', () => {
     render(<PersonasAdmin tipo="cliente" />);
 
-    fireEvent.click(await botonLista('Editar 123456785'));
+    fireEvent.click(boton('Editar 123456785'));
     fireEvent.click(boton('Eliminar cliente'));
 
     expect(screen.getByText(/¿Eliminar al cliente/)).toBeTruthy();
-    expect(bd.length).toBe(5);
+    expect(usuariosGuardados().length).toBe(5);
 
     fireEvent.click(boton('Confirmar eliminación'));
 
-    expect(await screen.findByText('Cliente eliminado correctamente.')).toBeTruthy();
-    await waitFor(() =>
-      expect(screen.queryByRole('button', { name: 'Editar 123456785' })).toBeNull()
-    );
-    expect(usuariosApi.eliminar).toHaveBeenCalledWith(1);
-    expect(bd.length).toBe(4);
+    expect(screen.getByText('Cliente eliminado correctamente.')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Editar 123456785' })).toBeNull();
+    expect(usuariosGuardados().length).toBe(4);
   });
 
-  it('muestra el error si el servidor no deja eliminar', async () => {
-    usuariosApi.eliminar.and.rejectWith(new ErrorApi('No puedes eliminar tu propia cuenta', 409));
+  it('no elimina nada si se cancela la confirmación', () => {
     render(<PersonasAdmin tipo="cliente" />);
 
-    fireEvent.click(await botonLista('Editar 123456785'));
-    fireEvent.click(boton('Eliminar cliente'));
-    fireEvent.click(boton('Confirmar eliminación'));
-
-    expect(await screen.findByText('No puedes eliminar tu propia cuenta')).toBeTruthy();
-    expect(bd.length).toBe(5);
-  });
-
-  it('no elimina nada si se cancela la confirmación', async () => {
-    render(<PersonasAdmin tipo="cliente" />);
-
-    fireEvent.click(await botonLista('Editar 123456785'));
+    fireEvent.click(boton('Editar 123456785'));
     fireEvent.click(boton('Eliminar cliente'));
     fireEvent.click(boton('Cancelar eliminación'));
 
     expect(screen.queryByText(/¿Eliminar al cliente/)).toBeNull();
     expect(boton('Eliminar cliente')).toBeTruthy();
-    expect(usuariosApi.eliminar).not.toHaveBeenCalled();
+    expect(usuariosGuardados().length).toBe(5);
   });
 
-  it('cancelar el formulario vuelve a la lista sin guardar', async () => {
+  it('cancelar el formulario vuelve a la lista sin guardar', () => {
     render(<PersonasAdmin tipo="cliente" />);
 
-    fireEvent.click(await botonLista('Nuevo cliente'));
+    fireEvent.click(boton('Nuevo cliente'));
     fireEvent.click(boton('Cancelar'));
 
     expect(boton('Nuevo cliente')).toBeTruthy();
-    expect(usuariosApi.crear).not.toHaveBeenCalled();
+    expect(usuariosGuardados().length).toBe(5);
   });
 });
 
 describe('PersonasAdmin - empleados', () => {
-  let bd;
+  beforeEach(() => guardarUsuarios(JSON.parse(JSON.stringify(USUARIOS))));
 
-  const botonLista = (nombre) => screen.findByRole('button', { name: nombre });
-
-  beforeEach(() => {
-    bd = instalarUsuariosFalsos(USUARIOS);
-  });
-
-  it('lista solo a los empleados', async () => {
+  it('lista solo a los empleados', () => {
     render(<PersonasAdmin tipo="empleado" />);
 
     expect(screen.getByRole('heading', { name: 'Empleados' })).toBeTruthy();
-    expect(await screen.findByText('Vera Rojas')).toBeTruthy();
+    expect(screen.getByText('Vera Rojas')).toBeTruthy();
     expect(screen.getByText('Carlos Silva')).toBeTruthy();
     expect(screen.getByText('Demo')).toBeTruthy();
     expect(screen.queryByText('Ana Torres')).toBeNull();
   });
 
-  it('filtra entre administradores y empleados / vendedores', async () => {
+  it('filtra entre administradores y empleados / vendedores', () => {
     render(<PersonasAdmin tipo="empleado" />);
 
-    await screen.findByText('Vera Rojas');
     fireEvent.change(screen.getByLabelText('Filtrar empleados'), {
       target: { value: 'Administrador' },
     });
@@ -838,34 +722,35 @@ describe('PersonasAdmin - empleados', () => {
     expect(screen.queryByText('Carlos Silva')).toBeNull();
   });
 
-  it('crea un empleado con su rol', async () => {
+  it('crea un empleado con su rol', () => {
     render(<PersonasAdmin tipo="empleado" />);
 
-    fireEvent.click(await botonLista('Nuevo empleado'));
+    fireEvent.click(boton('Nuevo empleado'));
     completar({ ...CLIENTE_NUEVO, rol: 'Administrador' });
     fireEvent.click(boton('Guardar'));
 
-    expect(await screen.findByText('Empleado registrado con éxito.')).toBeTruthy();
+    expect(screen.getByText('Empleado registrado con éxito.')).toBeTruthy();
 
-    const guardado = bd.find((u) => u.run === '222222222');
+    const guardado = usuariosGuardados().find((u) => u.run === '222222222');
 
-    expect(guardado.tipo).toBe('Administrador');
+    expect(guardado.tipoUsuario).toBe('Administrador');
+    expect(guardado.rol).toBe('Administrador');
   });
 
   it('exige elegir un rol', async () => {
     render(<PersonasAdmin tipo="empleado" />);
 
-    fireEvent.click(await botonLista('Nuevo empleado'));
+    fireEvent.click(boton('Nuevo empleado'));
     fireEvent.click(boton('Guardar'));
 
     expect(await screen.findByText('Debes seleccionar un rol o cargo.')).toBeTruthy();
-    expect(usuariosApi.crear).not.toHaveBeenCalled();
+    expect(usuariosGuardados().length).toBe(5);
   });
 
-  it('edita a un empleado antiguo sin RUN conservando su correo', async () => {
+  it('edita a un empleado antiguo sin RUN conservando su correo', () => {
     render(<PersonasAdmin tipo="empleado" />);
 
-    fireEvent.click(await botonLista('Editar demo@duoc.cl'));
+    fireEvent.click(boton('Editar demo@duoc.cl'));
     completar(
       {
         apellidos: 'De Prueba',
@@ -877,68 +762,47 @@ describe('PersonasAdmin - empleados', () => {
     );
     fireEvent.click(boton('Guardar cambios'));
 
-    expect(await screen.findByText('Empleado actualizado con éxito.')).toBeTruthy();
+    expect(screen.getByText('Empleado actualizado con éxito.')).toBeTruthy();
 
-    const demo = bd.find((u) => u.correo === 'demo@duoc.cl');
+    const demo = usuariosGuardados().find((u) => u.correo === 'demo@duoc.cl');
 
     expect(demo.apellidos).toBe('De Prueba');
-    expect(demo.tipo).toBe('Vendedor');
+    expect(demo.tipoUsuario).toBe('Vendedor');
+    expect(demo.password).toBe('1234');
   });
 
-  it('elimina a un empleado después de confirmar', async () => {
+  it('elimina a un empleado después de confirmar', () => {
     render(<PersonasAdmin tipo="empleado" />);
 
-    fireEvent.click(await botonLista('Editar 76543216'));
+    fireEvent.click(boton('Editar 76543216'));
     fireEvent.click(boton('Eliminar empleado'));
 
     expect(screen.getByText(/¿Eliminar al empleado/)).toBeTruthy();
 
     fireEvent.click(boton('Confirmar eliminación'));
 
-    expect(await screen.findByText('Empleado eliminado correctamente.')).toBeTruthy();
-    expect(bd.some((u) => u.run === '76543216')).toBeFalse();
+    expect(screen.getByText('Empleado eliminado correctamente.')).toBeTruthy();
+    expect(usuariosGuardados().some((u) => u.run === '76543216')).toBeFalse();
   });
 });
 
 // ---------------------------------------------------------------------------
-// 3. Rutas, menú y acceso al panel (con la aplicación completa)
+// 3. Rutas y menú del panel (con la aplicación completa)
 // ---------------------------------------------------------------------------
 
 describe('Rutas del panel administrativo', () => {
-  const ADMINISTRADOR = {
-    token: 'tok-admin',
-    expiraEnSegundos: 3600,
-    usuario: {
-      id: 4,
-      nombre: 'Carlos',
-      correo: 'carlos@profesor.duoc.cl',
-      rol: 'ADMINISTRADOR',
-      tipoUsuario: 'Administrador',
-    },
-  };
-
-  const conRol = (rol, tipoUsuario) => ({
-    ...ADMINISTRADOR,
-    usuario: { ...ADMINISTRADOR.usuario, rol, tipoUsuario },
-  });
-
   function renderizar(ruta = '/admin') {
     return render(
       <MemoryRouter initialEntries={[ruta]}>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <App />
       </MemoryRouter>
     );
   }
 
-  const menu = () =>
-    screen.getByRole('navigation', { name: 'Menú de administración' });
-
   beforeEach(() => {
-    instalarEncargosFalsos(ENCARGOS);
-    instalarUsuariosFalsos(USUARIOS);
-    instalarProductosFalsos([
+    guardarEncargos(JSON.parse(JSON.stringify(ENCARGOS)));
+    guardarUsuarios(JSON.parse(JSON.stringify(USUARIOS)));
+    guardarProductos([
       {
         codigo: 'GTR001',
         categoria: 'Guitarras Eléctricas',
@@ -948,46 +812,41 @@ describe('Rutas del panel administrativo', () => {
         precio: 650000,
       },
     ]);
-    guardarSesion(ADMINISTRADOR);
   });
 
-  it('/admin muestra el menú lateral y el dashboard', async () => {
+  it('/admin muestra el menú lateral y el dashboard', () => {
     renderizar();
+
+    const menu = screen.getByRole('navigation', { name: 'Menú de administración' });
 
     ['Dashboard', 'Productos', 'Encargos', 'Clientes', 'Empleados'].forEach(
       (nombre) => {
-        expect(within(menu()).getByRole('link', { name: nombre })).toBeTruthy();
+        expect(within(menu).getByRole('link', { name: nombre })).toBeTruthy();
       }
     );
     expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeTruthy();
     expect(
-      within(menu()).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')
+      within(menu).getByRole('link', { name: 'Dashboard' }).getAttribute('aria-current')
     ).toBe('page');
-    await screen.findByTestId('resumen-encargos-total');
-  });
-
-  it('muestra el nombre y el tipo del usuario conectado', async () => {
-    renderizar();
-
-    expect(await screen.findByText(/Carlos · Administrador/)).toBeTruthy();
   });
 
   it('el menú lleva a cada sección y marca la activa', async () => {
     renderizar();
+    const menu = screen.getByRole('navigation', { name: 'Menú de administración' });
 
-    fireEvent.click(within(menu()).getByRole('link', { name: 'Clientes' }));
+    fireEvent.click(within(menu).getByRole('link', { name: 'Clientes' }));
     expect(await screen.findByRole('heading', { name: 'Clientes' })).toBeTruthy();
     expect(
-      within(menu()).getByRole('link', { name: 'Clientes' }).getAttribute('aria-current')
+      within(menu).getByRole('link', { name: 'Clientes' }).getAttribute('aria-current')
     ).toBe('page');
 
-    fireEvent.click(within(menu()).getByRole('link', { name: 'Encargos' }));
+    fireEvent.click(within(menu).getByRole('link', { name: 'Encargos' }));
     expect(await screen.findByRole('heading', { name: 'Encargos' })).toBeTruthy();
 
-    fireEvent.click(within(menu()).getByRole('link', { name: 'Empleados' }));
+    fireEvent.click(within(menu).getByRole('link', { name: 'Empleados' }));
     expect(await screen.findByRole('heading', { name: 'Empleados' })).toBeTruthy();
 
-    fireEvent.click(within(menu()).getByRole('link', { name: 'Productos' }));
+    fireEvent.click(within(menu).getByRole('link', { name: 'Productos' }));
     expect(await screen.findByRole('heading', { name: 'Productos' })).toBeTruthy();
     expect(await screen.findByText('Fender Stratocaster')).toBeTruthy();
   });
@@ -995,80 +854,21 @@ describe('Rutas del panel administrativo', () => {
   it('pasar de clientes a empleados no arrastra el formulario abierto', async () => {
     renderizar('/admin/clientes');
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Nuevo cliente' }));
+    fireEvent.click(boton('Nuevo cliente'));
     expect(screen.getByRole('heading', { name: 'Nuevo cliente' })).toBeTruthy();
 
     fireEvent.click(screen.getByRole('link', { name: 'Empleados' }));
 
     expect(await screen.findByRole('heading', { name: 'Empleados' })).toBeTruthy();
-    expect(await screen.findByRole('button', { name: 'Nuevo empleado' })).toBeTruthy();
+    expect(boton('Nuevo empleado')).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Nuevo cliente' })).toBeNull();
   });
 
-  it('incluye un enlace para volver a la tienda', async () => {
+  it('incluye un enlace para volver a la tienda', () => {
     renderizar();
 
     expect(
       screen.getByRole('link', { name: 'Ir a la tienda' }).getAttribute('href')
     ).toBe('/');
-    await screen.findByTestId('resumen-encargos-total');
-  });
-
-  it('sin sesión, /admin lleva a la pantalla de login', async () => {
-    borrarSesion();
-
-    renderizar();
-
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeTruthy();
-    expect(screen.queryByRole('heading', { name: 'Dashboard' })).toBeNull();
-  });
-
-  it('un vendedor no ve Clientes ni Empleados en el menú', async () => {
-    guardarSesion(conRol('VENDEDOR', 'Vendedor'));
-
-    renderizar();
-
-    expect(within(menu()).getByRole('link', { name: 'Productos' })).toBeTruthy();
-    expect(within(menu()).queryByRole('link', { name: 'Clientes' })).toBeNull();
-    expect(within(menu()).queryByRole('link', { name: 'Empleados' })).toBeNull();
-    await screen.findByTestId('resumen-encargos-total');
-  });
-
-  it('un vendedor no puede abrir /admin/clientes', async () => {
-    guardarSesion(conRol('VENDEDOR', 'Vendedor'));
-
-    renderizar('/admin/clientes');
-
-    expect(await screen.findByRole('heading', { name: 'Acceso denegado' })).toBeTruthy();
-    expect(usuariosApi.listar).not.toHaveBeenCalled();
-  });
-
-  it('un cliente no puede entrar al panel', async () => {
-    guardarSesion(conRol('CLIENTE', 'Cliente'));
-
-    renderizar();
-
-    expect(await screen.findByRole('heading', { name: 'Acceso denegado' })).toBeTruthy();
-  });
-
-  it('cerrar sesión borra el token y vuelve al login', async () => {
-    renderizar();
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
-
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeTruthy();
-    expect(leerSesion()).toBeNull();
-  });
-
-  it('si el servidor avisa que el token venció, se vuelve al login', async () => {
-    dashboardApi.resumen.and.callFake(async () => {
-      borrarSesion();
-      window.dispatchEvent(new Event(EVENTO_SESION_EXPIRADA));
-      throw new ErrorApi('Token inválido o expirado', 401);
-    });
-
-    renderizar();
-
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeTruthy();
   });
 });

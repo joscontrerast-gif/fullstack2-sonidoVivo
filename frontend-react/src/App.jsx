@@ -1,7 +1,10 @@
-
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { obtenerProductos } from './services/productos.js';
+import Navbar from './components/Navbar.jsx';
+import Login from './pages/Login.jsx';
+import Registro from './pages/Registro.jsx';
 import DetalleProducto from './pages/DetalleProducto.jsx';
 import Carrito from './pages/Carrito.jsx';
 import Checkout from './pages/Checkout.jsx';
@@ -10,13 +13,16 @@ import DashboardAdmin from './modules/admin/pages/DashboardAdmin.jsx';
 import PanelAdmin from './modules/admin/pages/PanelAdmin.jsx';
 import EncargosAdmin from './modules/admin/pages/EncargosAdmin.jsx';
 import PersonasAdmin from './modules/admin/pages/PersonasAdmin.jsx';
-import Login from './modules/auth/Login.jsx';
-import Registro from './modules/auth/Registro.jsx';
-import RutaProtegida from './modules/auth/RutaProtegida.jsx';
-import { ROLES_PANEL, useAuth } from './modules/auth/AuthContext.jsx';
+import CompraExitosa from './modules/compra/pages/CompraExitosa.jsx';
+import CompraFallida from './modules/compra/pages/CompraFallida.jsx';
+
+function RutaAdmin({ children }) {
+  const { autenticado, esAdmin } = useAuth();
+  if (autenticado && !esAdmin) return <Navigate to="/" replace />;
+  return children;
+}
 
 function Catalogo() {
-  const { usuario, cerrarSesion } = useAuth();
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState('');
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
@@ -28,8 +34,8 @@ function Catalogo() {
       try {
         const datos = await obtenerProductos();
         setProductos(datos);
-      } catch (error) {
-        setError(error.message);
+      } catch (err) {
+        setError(err.message);
       } finally {
         setCargando(false);
       }
@@ -76,49 +82,7 @@ function Catalogo() {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div className="container">
-          <Link className="navbar-brand fw-bold" to="/">
-            Sonido Vivo
-          </Link>
-
-          <div className="d-flex align-items-center gap-3">
-            <span className="navbar-text d-none d-sm-inline">
-              Instrumentos y equipos musicales
-            </span>
-
-            {usuario ? (
-              <>
-                {ROLES_PANEL.includes(usuario.rol) && (
-                  <Link to="/admin" className="btn btn-outline-warning">
-                    Administración
-                  </Link>
-                )}
-                <button
-                  type="button"
-                  className="btn btn-outline-light"
-                  onClick={cerrarSesion}
-                >
-                  Salir
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/login" className="btn btn-outline-light">
-                  Ingresar
-                </Link>
-                <Link to="/registro" className="btn btn-outline-info">
-                  Registrarse
-                </Link>
-              </>
-            )}
-
-            <Link to="/carrito" className="btn btn-outline-light">
-              🛒 Carrito
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="container py-4">
         <div className="mb-4">
@@ -181,7 +145,7 @@ function Catalogo() {
           <div className="alert alert-danger" role="alert">
             No se pudieron cargar los productos: {error}
             <p className="mb-0 mt-2">
-              Comprueba que exista public/data/productos.json.
+              Verifica que el microservicio admin esté corriendo en el puerto 8082.
             </p>
           </div>
         )}
@@ -203,7 +167,16 @@ function Catalogo() {
                     className="col-sm-6 col-lg-4"
                     key={producto.codigo}
                   >
-                    <article className="card h-100 shadow-sm">
+                    <article className="card h-100 shadow-sm overflow-hidden">
+                      {producto.imagen && (
+                        <img
+                          src={producto.imagen}
+                          alt={producto.nombre}
+                          className="card-img-top bg-light p-2"
+                          style={{ height: '190px', objectFit: 'contain' }}
+                        />
+                      )}
+
                       <div className="card-body d-flex flex-column">
                         <span className="badge text-bg-secondary align-self-start mb-2">
                           {producto.categoria || 'Sin categoría'}
@@ -260,36 +233,44 @@ function Catalogo() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Catalogo />} />
-      <Route
-        path="/productos/:codigo"
-        element={<DetalleProducto />}
-      />
-      <Route path="/carrito" element={<Carrito />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/registro" element={<Registro />} />
-      <Route element={<RutaProtegida />}>
-        <Route path="/admin" element={<LayoutAdmin />}>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<Catalogo />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Registro />} />
+        <Route
+          path="/productos/:codigo"
+          element={<DetalleProducto />}
+        />
+        <Route path="/carrito" element={<Carrito />} />
+        <Route
+          path="/admin"
+          element={
+            <RutaAdmin>
+              <LayoutAdmin />
+            </RutaAdmin>
+          }
+        >
           <Route index element={<DashboardAdmin />} />
           <Route path="productos" element={<PanelAdmin />} />
           <Route path="encargos" element={<EncargosAdmin />} />
-          <Route element={<RutaProtegida rolesPermitidos={['ADMINISTRADOR']} />}>
-            <Route
-              path="clientes"
-              element={<PersonasAdmin key="cliente" tipo="cliente" />}
-            />
-            <Route
-              path="empleados"
-              element={<PersonasAdmin key="empleado" tipo="empleado" />}
-            />
-          </Route>
+          <Route
+            path="clientes"
+            element={<PersonasAdmin key="cliente" tipo="cliente" />}
+          />
+          <Route
+            path="empleados"
+            element={<PersonasAdmin key="empleado" tipo="empleado" />}
+          />
         </Route>
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-      <Route path="/checkout" element={<Checkout />} />
-    </Routes>
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/compra-exitosa" element={<CompraExitosa />} />
+        <Route path="/compra-fallida" element={<CompraFallida />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
   );
 }
 
 export default App;
+//dos mas dos 

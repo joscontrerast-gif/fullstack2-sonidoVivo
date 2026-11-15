@@ -13,13 +13,14 @@ import {
   obtenerProductos,
   restablecerProductos,
 } from '../../../data/productos.js';
-import { productosApi } from '../../../api/adminApi.js';
-import { instalarProductosFalsos } from '../../../tests/baseFalsa.js';
 import {
+  borrarProducto,
   calcularResumen,
   esStockCritico,
   filtrarProductos,
   formatearPrecio,
+  guardarProducto,
+  listarProductos,
   obtenerCategorias,
   obtenerCategoriasFormulario,
   validarProducto,
@@ -361,6 +362,68 @@ describe('Servicio administrativo', () => {
     });
   });
 
+  describe('operaciones del panel', () => {
+    beforeEach(() => guardarProductos(copiaProductos()));
+
+    it('listarProductos devuelve los productos guardados', async () => {
+      expect((await listarProductos()).length).toBe(3);
+    });
+
+    it('guardarProducto crea un producto válido', async () => {
+      const resultado = await guardarProducto(DATOS_VALIDOS);
+
+      expect(resultado.ok).toBeTrue();
+      expect(resultado.producto.codigo).toBe('TEC001');
+      expect(productosGuardados().length).toBe(4);
+    });
+
+    it('guardarProducto no guarda nada si los datos son inválidos', async () => {
+      const resultado = await guardarProducto({ ...DATOS_VALIDOS, nombre: '' });
+
+      expect(resultado.ok).toBeFalse();
+      expect(resultado.errores.nombre).toBeDefined();
+      expect(productosGuardados().length).toBe(3);
+    });
+
+    it('guardarProducto rechaza un código que ya existe', async () => {
+      const resultado = await guardarProducto({
+        ...DATOS_VALIDOS,
+        codigo: 'bat001',
+      });
+
+      expect(resultado.ok).toBeFalse();
+      expect(resultado.errores.codigo).toMatch(/Ya existe/);
+      expect(productosGuardados().length).toBe(3);
+    });
+
+    it('guardarProducto edita sin permitir cambiar el código', async () => {
+      const resultado = await guardarProducto(
+        {
+          ...DATOS_VALIDOS,
+          codigo: 'IGNORADO',
+          nombre: 'Stratocaster II',
+          categoria: 'Guitarras Eléctricas',
+        },
+        'GTR001'
+      );
+
+      const guardados = productosGuardados();
+
+      expect(resultado.ok).toBeTrue();
+      expect(guardados.length).toBe(3);
+      expect(guardados[0].codigo).toBe('GTR001');
+      expect(guardados[0].nombre).toBe('Stratocaster II');
+      expect(guardados[0].fechaIngreso).toBe('2026-01-10');
+      expect(guardados.some((p) => p.codigo === 'IGNORADO')).toBeFalse();
+    });
+
+    it('borrarProducto elimina el producto', async () => {
+      await borrarProducto('ACC001');
+
+      expect(productosGuardados().length).toBe(2);
+    });
+  });
+
   describe('helpers', () => {
     it('esStockCritico compara el stock con el stock crítico', () => {
       expect(esStockCritico(PRODUCTOS_PRUEBA[0])).toBeFalse();
@@ -614,10 +677,8 @@ describe('PanelAdmin', () => {
     );
   }
 
-  let bd;
-
   beforeEach(() => {
-    bd = instalarProductosFalsos(copiaProductos());
+    guardarProductos(copiaProductos());
   });
 
   it('muestra el resumen y el listado de productos', async () => {
@@ -631,14 +692,13 @@ describe('PanelAdmin', () => {
   });
 
   it('informa el error si no se pueden cargar los productos', async () => {
-    productosApi.listar.and.rejectWith(
-      new Error('No se pudo conectar con el servidor')
-    );
+    localStorage.clear();
+    spyOn(window, 'fetch').and.returnValue(Promise.resolve({ ok: false }));
 
     renderizarPanel();
 
     expect(
-      await screen.findByText(/No se pudo conectar con el servidor/)
+      await screen.findByText(/No se pudieron cargar los productos/)
     ).toBeTruthy();
   });
 
@@ -658,7 +718,7 @@ describe('PanelAdmin', () => {
     expect(await screen.findByText('Producto creado con éxito.')).toBeTruthy();
     expect(screen.getByText('Teclado Casio')).toBeTruthy();
     expect(screen.getByTestId('resumen-total').textContent).toBe('4');
-    expect(bd.some((p) => p.codigo === 'TEC001')).toBeTrue();
+    expect(productosGuardados().some((p) => p.codigo === 'TEC001')).toBeTrue();
   });
 
   it('valida el formulario y no guarda si faltan datos', async () => {
@@ -670,7 +730,7 @@ describe('PanelAdmin', () => {
     expect(await screen.findByText('El nombre es obligatorio.')).toBeTruthy();
     expect(screen.getByText('Debes seleccionar una categoría.')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Nuevo producto' })).toBeTruthy();
-    expect(bd.length).toBe(3);
+    expect(productosGuardados().length).toBe(3);
   });
 
   it('no permite crear un producto con un código repetido', async () => {
@@ -689,7 +749,7 @@ describe('PanelAdmin', () => {
     expect(
       await screen.findByText('Ya existe un producto con el código "GTR001".')
     ).toBeTruthy();
-    expect(bd.length).toBe(3);
+    expect(productosGuardados().length).toBe(3);
   });
 
   it('edita un producto existente', async () => {
@@ -704,7 +764,7 @@ describe('PanelAdmin', () => {
 
     expect(await screen.findByText('Producto actualizado con éxito.')).toBeTruthy();
     expect(screen.getByText('Fender Stratocaster II')).toBeTruthy();
-    expect(bd[0].nombre).toBe('Stratocaster II');
+    expect(productosGuardados()[0].nombre).toBe('Stratocaster II');
   });
 
   it('elimina un producto solo después de confirmar', async () => {
@@ -713,28 +773,13 @@ describe('PanelAdmin', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Eliminar BAT001' }));
 
     expect(screen.getByText(/¿Eliminar el producto/)).toBeTruthy();
-    expect(bd.length).toBe(3);
+    expect(productosGuardados().length).toBe(3);
 
     fireEvent.click(screen.getByRole('button', { name: 'Confirmar eliminación' }));
 
     expect(await screen.findByText('Producto eliminado con éxito.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Eliminar BAT001' })).toBeNull();
-    expect(bd.length).toBe(2);
-  });
-
-  it('muestra el mensaje del servidor cuando el producto solo se desactiva', async () => {
-    productosApi.eliminar.and.resolveTo({
-      eliminado: false,
-      mensaje: 'El producto tiene ventas, se desactivó para conservar el historial',
-    });
-    renderizarPanel();
-
-    fireEvent.click(await screen.findByRole('button', { name: 'Eliminar BAT001' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Confirmar eliminación' }));
-
-    expect(
-      await screen.findByText(/se desactivó para conservar el historial/)
-    ).toBeTruthy();
+    expect(productosGuardados().length).toBe(2);
   });
 
   it('no elimina nada si se cancela la confirmación', async () => {
@@ -745,7 +790,7 @@ describe('PanelAdmin', () => {
 
     expect(screen.queryByText(/¿Eliminar el producto/)).toBeNull();
     expect(screen.getByRole('button', { name: 'Eliminar BAT001' })).toBeTruthy();
-    expect(bd.length).toBe(3);
+    expect(productosGuardados().length).toBe(3);
   });
 
   it('filtra el listado por categoría', async () => {
@@ -779,6 +824,6 @@ describe('PanelAdmin', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
 
     expect(await screen.findByRole('button', { name: 'Nuevo producto' })).toBeTruthy();
-    expect(bd.length).toBe(3);
+    expect(productosGuardados().length).toBe(3);
   });
 });

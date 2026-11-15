@@ -1,4 +1,5 @@
-import { vaciarCarrito } from '../../../services/carrito.js';
+import { obtenerToken } from '../../../services/api.js';
+import { vaciarCarrito, vaciarCarritoApi } from '../../../services/carrito.js';
 
 export const COSTOS_ENTREGA = {
   estandar: 1990,
@@ -83,18 +84,24 @@ export function construirResumen(productos, datos) {
   };
 }
 
-// Valida todo y, si está correcto, vacía el carrito y devuelve el resumen.
 export function confirmarCompra(productos, datos) {
   const mensajeCarrito = validarCarrito(productos);
 
   if (mensajeCarrito) {
-    return { exito: false, mensaje: mensajeCarrito, errores: {}, resumen: null };
+    return {
+      ok: false,
+      exito: false,
+      mensaje: mensajeCarrito,
+      errores: {},
+      resumen: null,
+    };
   }
 
   const errores = validarDatosEnvio(datos);
 
   if (Object.keys(errores).length > 0) {
     return {
+      ok: false,
       exito: false,
       mensaje: 'Revisa los datos de envío.',
       errores,
@@ -103,7 +110,17 @@ export function confirmarCompra(productos, datos) {
   }
 
   const resumen = construirResumen(productos, datos);
-  vaciarCarrito();
 
-  return { exito: true, mensaje: '', errores: {}, resumen };
+  if (!obtenerToken()) {
+    vaciarCarrito();
+    return { ok: true, exito: true, mensaje: '', errores: {}, resumen };
+  }
+
+  return vaciarCarritoApi().then(() => ({
+    ok: true,
+    exito: true,
+    mensaje: '',
+    errores: {},
+    resumen,
+  }));
 }

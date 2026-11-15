@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { obtenerProductos } from '../services/productos.js';
-import { obtenerCarrito } from '../services/carrito.js';
+import { obtenerCarritoApi } from '../services/carrito.js';
+import Navbar from '../components/Navbar.jsx';
 import FormularioCheckout from '../modules/compra/components/FormularioCheckout.jsx';
 import ResumenCompra from '../modules/compra/components/ResumenCompra.jsx';
 import {
@@ -13,17 +14,20 @@ function Checkout() {
   const navigate = useNavigate();
 
   const [productos, setProductos] = useState([]);
+  const [carrito, setCarrito] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
   const [entrega, setEntrega] = useState('estandar');
 
-  const carrito = obtenerCarrito();
-
   useEffect(() => {
-    async function cargarProductos() {
+    async function cargarDatos() {
       try {
-        const datos = await obtenerProductos();
-        setProductos(datos);
+        const [datosProductos, datosCarrito] = await Promise.all([
+          obtenerProductos(),
+          obtenerCarritoApi(),
+        ]);
+        setProductos(datosProductos);
+        setCarrito(datosCarrito);
       } catch {
         setError('No se pudieron cargar los productos.');
       } finally {
@@ -31,7 +35,7 @@ function Checkout() {
       }
     }
 
-    cargarProductos();
+    cargarDatos();
   }, []);
 
   const productosCompra = carrito
@@ -48,11 +52,11 @@ function Checkout() {
 
   const costoEntrega = obtenerCostoEntrega(entrega);
 
-  function manejarConfirmacion(datos) {
+  async function manejarConfirmacion(datos) {
     setError('');
 
     try {
-      const resultado = confirmarCompra(productosCompra, datos);
+      const resultado = await confirmarCompra(productosCompra, datos);
 
       if (!resultado.exito) {
         setError(resultado.mensaje);
@@ -87,16 +91,14 @@ function Checkout() {
 
   return (
     <>
-      <nav className="navbar navbar-dark bg-dark">
-        <div className="container">
-          <Link to="/" className="navbar-brand fw-bold">
-            Sonido Vivo
-          </Link>
-          <Link to="/carrito" className="btn btn-outline-light">
+      <Navbar
+        mostrarCarrito={false}
+        enlaceExtra={
+          <Link to="/carrito" className="btn btn-outline-light btn-sm">
             Volver al carrito
           </Link>
-        </div>
-      </nav>
+        }
+      />
 
       <main className="container py-4">
         <h1 className="mb-4">Finalizar compra</h1>

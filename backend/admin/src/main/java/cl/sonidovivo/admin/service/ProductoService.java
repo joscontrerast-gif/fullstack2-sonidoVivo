@@ -1,21 +1,22 @@
 package cl.sonidovivo.admin.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Locale;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
 import cl.sonidovivo.admin.dto.ProductoDto;
-import cl.sonidovivo.admin.dto.ProductoPublicoDto;
 import cl.sonidovivo.admin.dto.ProductoRequest;
 import cl.sonidovivo.admin.entity.Categoria;
 import cl.sonidovivo.admin.entity.Producto;
 import cl.sonidovivo.admin.repository.CategoriaRepository;
 import cl.sonidovivo.admin.repository.DetalleEncargoRepository;
 import cl.sonidovivo.admin.repository.ProductoRepository;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Locale;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ProductoService {
@@ -47,23 +48,6 @@ public class ProductoService {
     @Transactional(readOnly = true)
     public ProductoDto obtener(String codigo) {
         return ProductoDto.de(buscar(codigo));
-    }
-
-    @Transactional(readOnly = true)
-    public List<ProductoPublicoDto> listarPublico() {
-        return productos.findAll(Sort.by("codigo")).stream()
-                .filter(p -> Integer.valueOf(1).equals(p.getActivo()))
-                .map(ProductoPublicoDto::de)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public ProductoPublicoDto obtenerPublico(String codigo) {
-        Producto p = buscar(codigo);
-        if (!Integer.valueOf(1).equals(p.getActivo())) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado");
-        }
-        return ProductoPublicoDto.de(p);
     }
 
     @Transactional(readOnly = true)
@@ -120,6 +104,7 @@ public class ProductoService {
         p.setMarca(vacioANulo(r.marca()));
         p.setModelo(vacioANulo(r.modelo()));
         p.setDescripcion(vacioANulo(r.descripcion()));
+        p.setImagen(vacioANulo(r.imagen()));
         p.setPrecio(r.precio());
         p.setStock(r.stock());
         p.setStockCritico(r.stockCritico());

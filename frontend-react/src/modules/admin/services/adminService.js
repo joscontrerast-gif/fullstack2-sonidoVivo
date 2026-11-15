@@ -1,9 +1,12 @@
-// Lógica del módulo administrativo: validaciones, helpers de presentación
-// y operaciones que llaman al backend (admin-service) a través de src/api.
-
-import { productosApi } from '../../../api/adminApi.js';
-import { ErrorApi } from '../../../api/http.js';
-import { normalizarCodigo, codigoDe } from '../../../data/productos.js';
+import { URLS, apiFetch, obtenerToken } from '../../../services/api.js';
+import {
+  obtenerProductos as obtenerProductosLocal,
+  crearProducto as crearProductoLocal,
+  actualizarProducto as actualizarProductoLocal,
+  eliminarProducto as eliminarProductoLocal,
+  normalizarCodigo,
+  codigoDe,
+} from '../../../data/productos.js';
 
 export const CATEGORIAS_BASE = [
   'Accesorios',
@@ -25,6 +28,7 @@ export const LIMITES = {
   marca: 50,
   modelo: 50,
   descripcion: 500,
+  imagen: 500,
 };
 
 const PATRON_CODIGO = /^[A-Z0-9-]+$/;
@@ -33,14 +37,11 @@ function texto(valor) {
   return String(valor ?? '').trim();
 }
 
-// Los inputs entregan strings: '' no es 0, es "sin valor".
 function aNumero(valor) {
   if (typeof valor === 'number') {
     return valor;
   }
-
   const limpio = texto(valor);
-
   return limpio === '' ? NaN : Number(limpio);
 }
 
@@ -48,11 +49,6 @@ function esEnteroNoNegativo(numero) {
   return Number.isInteger(numero) && numero >= 0;
 }
 
-/**
- * Valida los datos del formulario de producto.
- * Devuelve { valido, errores, producto }. "producto" viene normalizado
- * (strings recortados, números convertidos) solo si es válido.
- */
 export function validarProducto(
   datos = {},
   { modo = 'crear', productosExistentes = [] } = {}
@@ -64,6 +60,7 @@ export function validarProducto(
   const marca = texto(datos.marca);
   const modelo = texto(datos.modelo);
   const descripcion = texto(datos.descripcion);
+  const imagen = texto(datos.imagen);
   const categoria = texto(datos.categoria);
   const precio = aNumero(datos.precio);
   const stock = aNumero(datos.stock);
@@ -71,7 +68,6 @@ export function validarProducto(
   const stockCritico =
     stockCriticoBruto === '' ? null : aNumero(datos.stockCritico);
 
-  // El código solo se define al crear; al editar no se puede cambiar.
   if (modo === 'crear') {
     if (codigo.length < LIMITES.codigoMin) {
       errores.codigo = `El código debe tener al menos ${LIMITES.codigoMin} caracteres.`;
@@ -107,6 +103,10 @@ export function validarProducto(
     errores.descripcion = `La descripción no puede superar los ${LIMITES.descripcion} caracteres.`;
   }
 
+  if (imagen.length > LIMITES.imagen) {
+    errores.imagen = `La ruta o URL de imagen no puede superar los ${LIMITES.imagen} caracteres.`;
+  }
+
   if (!categoria) {
     errores.categoria = 'Debes seleccionar una categoría.';
   }
@@ -137,6 +137,7 @@ export function validarProducto(
           marca,
           modelo,
           descripcion,
+          imagen,
           categoria,
           precio,
           stock,
@@ -146,40 +147,18 @@ export function validarProducto(
   };
 }
 
-// ---- Operaciones CRUD del panel ----
+// ---- Operaciones CRUD (Oracle con sesión / localStorage en tests) ----
 
-export function listarProductos() {
-  return productosApi.listar();
-}
-
-// Convierte un error del servidor en el mismo formato { ok, errores } que usan
-// los formularios. Los errores sin campo (red, permisos...) se propagan.
-function resultadoDeError(error, campoConflicto) {
-  if (error instanceof ErrorApi) {
-    if (Object.keys(error.errores).length > 0) {
-      return { ok: false, errores: error.errores, producto: null };
-    }
-
-    if (error.estado === 409 && campoConflicto) {
-      return {
-        ok: false,
-        errores: { [campoConflicto]: error.message },
-        producto: null,
-      };
-    }
+export async function listarProductos() {
+  if (!obtenerToken()) {
+    return await obtenerProductosLocal();
   }
-
-  throw error;
+  return await apiFetch(URLS.admin, '/api/admin/productos?todos=true');
 }
 
-/**
- * Crea un producto (codigoOriginal = null) o edita uno existente.
- * Si los datos no son válidos NO se llama al servidor y se devuelven los errores.
- */
 export async function guardarProducto(datos, codigoOriginal = null) {
   const modo = codigoOriginal ? 'editar' : 'crear';
-  // Se incluyen los desactivados: su código sigue ocupado en la base de datos.
-  const existentes = await productosApi.listar({ todos: true });
+  const existentes = await listarProductos();
   const datosFinales =
     modo === 'editar' ? { ...datos, codigo: codigoOriginal } : datos;
 
@@ -192,21 +171,41 @@ export async function guardarProducto(datos, codigoOriginal = null) {
     return { ok: false, errores: resultado.errores, producto: null };
   }
 
-  try {
+  if (!obtenerToken()) {
     const producto =
       modo === 'editar'
-        ? await productosApi.actualizar(codigoOriginal, resultado.producto)
-        : await productosApi.crear(resultado.producto);
-
+        ? await actualizarProductoLocal(codigoOriginal, resultado.producto)
+        : await crearProductoLocal(resultado.producto);
     return { ok: true, errores: {}, producto };
-  } catch (error) {
-    return resultadoDeError(error, 'codigo');
   }
+
+  const producto =
+    modo === 'editar'
+      ? await apiFetch(
+          URLS.admin,
+          `/api/admin/productos/${encodeURIComponent(codigoOriginal)}`,
+          {
+            method: 'PUT',
+            body: JSON.stringify(resultado.producto),
+          }
+        )
+      : await apiFetch(URLS.admin, '/api/admin/productos', {
+          method: 'POST',
+          body: JSON.stringify(resultado.producto),
+        });
+
+  return { ok: true, errores: {}, producto };
 }
 
-// Devuelve { eliminado, mensaje }: un producto con ventas solo se desactiva.
-export function borrarProducto(codigo) {
-  return productosApi.eliminar(codigo);
+export async function borrarProducto(codigo) {
+  if (!obtenerToken()) {
+    return await eliminarProductoLocal(codigo);
+  }
+  return await apiFetch(
+    URLS.admin,
+    `/api/admin/productos/${encodeURIComponent(codigo)}`,
+    { method: 'DELETE' }
+  );
 }
 
 // ---- Helpers de presentación y consulta ----
@@ -215,17 +214,14 @@ export function esStockCritico(producto) {
   if (producto.stockCritico === null || producto.stockCritico === undefined) {
     return false;
   }
-
   return Number(producto.stock) <= Number(producto.stockCritico);
 }
 
 export function formatearPrecio(valor) {
   const numero = Number(valor) || 0;
-
   if (numero === 0) {
     return 'FREE';
   }
-
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency: 'CLP',
@@ -233,14 +229,12 @@ export function formatearPrecio(valor) {
   }).format(numero);
 }
 
-// Categorías que existen hoy en los productos (para el filtro)
 export function obtenerCategorias(productos) {
   return [
     ...new Set(productos.map((producto) => producto.categoria).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b, 'es'));
 }
 
-// Categorías base + las que ya existan (para el formulario)
 export function obtenerCategoriasFormulario(productos) {
   return [
     ...new Set([...CATEGORIAS_BASE, ...obtenerCategorias(productos)]),

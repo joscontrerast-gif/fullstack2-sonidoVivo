@@ -1,8 +1,12 @@
-
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { obtenerProductos } from '../services/productos.js';
-import { agregarAlCarrito } from '../services/carrito.js';
+import { obtenerToken } from '../services/api.js';
+import {
+  obtenerProductoPorCodigo,
+  obtenerProductos,
+} from '../services/productos.js';
+import { agregarAlCarritoApi } from '../services/carrito.js';
+import Navbar from '../components/Navbar.jsx';
 
 function DetalleProducto() {
   const { codigo } = useParams();
@@ -22,15 +26,22 @@ function DetalleProducto() {
       setAgregado(false);
 
       try {
-        const productos = await obtenerProductos();
-
-        const encontrado = productos.find(
-          (item) => String(item.codigo) === String(codigo)
-        );
-
-        setProducto(encontrado ?? null);
-      } catch {
-        setError('No se pudo cargar el producto.');
+        if (!obtenerToken()) {
+          const lista = await obtenerProductos();
+          const encontrado = Array.isArray(lista)
+            ? lista.find((p) => String(p.codigo) === String(codigo))
+            : null;
+          setProducto(encontrado ?? null);
+        } else {
+          const encontrado = await obtenerProductoPorCodigo(codigo);
+          setProducto(encontrado ?? null);
+        }
+      } catch (err) {
+        if (err.status === 404) {
+          setProducto(null);
+        } else {
+          setError('No se pudo cargar el producto.');
+        }
       } finally {
         setCargando(false);
       }
@@ -46,15 +57,16 @@ function DetalleProducto() {
       maximumFractionDigits: 0,
     }).format(Number(precio) || 0);
 
-  function manejarAgregarAlCarrito() {
+  async function manejarAgregarAlCarrito() {
     if (!producto || Number(producto.stock) <= 0) {
       setMensaje('Este producto no tiene stock disponible.');
       setAgregado(false);
       return;
     }
 
-    const resultado = agregarAlCarrito(
+    const resultado = await agregarAlCarritoApi(
       producto.codigo,
+      1,
       Number(producto.stock)
     );
 
@@ -96,17 +108,7 @@ function DetalleProducto() {
 
   return (
     <>
-      <nav className="navbar navbar-dark bg-dark">
-        <div className="container">
-          <Link to="/" className="navbar-brand fw-bold">
-            Sonido Vivo
-          </Link>
-
-          <Link to="/carrito" className="btn btn-outline-light">
-            🛒 Carrito
-          </Link>
-        </div>
-      </nav>
+      <Navbar />
 
       <main className="container py-5">
         <Link to="/" className="btn btn-outline-secondary mb-4">
@@ -115,59 +117,74 @@ function DetalleProducto() {
 
         <article className="card shadow-sm">
           <div className="card-body p-4">
-            <span className="badge text-bg-secondary mb-3">
-              {producto.categoria || 'Sin categoría'}
-            </span>
+            <div className="row g-4 align-items-center">
+              {producto.imagen && (
+                <div className="col-md-5 text-center">
+                  <img
+                    src={producto.imagen}
+                    alt={producto.nombre}
+                    className="img-fluid rounded bg-light p-3"
+                    style={{ maxHeight: '300px', objectFit: 'contain' }}
+                  />
+                </div>
+              )}
 
-            <h1>{producto.nombre}</h1>
+              <div className={producto.imagen ? 'col-md-7' : 'col-12'}>
+                <span className="badge text-bg-secondary mb-3">
+                  {producto.categoria || 'Sin categoría'}
+                </span>
 
-            <p className="text-secondary">
-              {producto.marca} · {producto.modelo}
-            </p>
+                <h1>{producto.nombre}</h1>
 
-            <p>{producto.descripcion}</p>
+                <p className="text-secondary">
+                  {producto.marca} · {producto.modelo}
+                </p>
 
-            <p className="small text-secondary">
-              Código: {producto.codigo}
-            </p>
+                <p>{producto.descripcion}</p>
 
-            <h2 className="h4 fw-bold">
-              {formatoPrecio(producto.precio)}
-            </h2>
+                <p className="small text-secondary">
+                  Código: {producto.codigo}
+                </p>
 
-            <p>
-              {sinStock
-                ? 'Sin stock disponible'
-                : `Stock disponible: ${producto.stock}`}
-            </p>
+                <h2 className="h4 fw-bold">
+                  {formatoPrecio(producto.precio)}
+                </h2>
 
-            {mensaje && (
-              <div
-                className={`alert ${
-                  agregado ? 'alert-success' : 'alert-warning'
-                }`}
-                role="status"
-              >
-                {mensaje}
+                <p>
+                  {sinStock
+                    ? 'Sin stock disponible'
+                    : `Stock disponible: ${producto.stock}`}
+                </p>
 
-                {agregado && (
-                  <div className="mt-2">
-                    <Link to="/carrito" className="btn btn-success btn-sm">
-                      Ver carrito
-                    </Link>
+                {mensaje && (
+                  <div
+                    className={`alert ${
+                      agregado ? 'alert-success' : 'alert-warning'
+                    }`}
+                    role="status"
+                  >
+                    {mensaje}
+
+                    {agregado && (
+                      <div className="mt-2">
+                        <Link to="/carrito" className="btn btn-success btn-sm">
+                          Ver carrito
+                        </Link>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
 
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={sinStock}
-              onClick={manejarAgregarAlCarrito}
-            >
-              {sinStock ? 'Sin stock' : 'Agregar al carrito'}
-            </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled={sinStock}
+                  onClick={manejarAgregarAlCarrito}
+                >
+                  {sinStock ? 'Sin stock' : 'Agregar al carrito'}
+                </button>
+              </div>
+            </div>
           </div>
         </article>
       </main>

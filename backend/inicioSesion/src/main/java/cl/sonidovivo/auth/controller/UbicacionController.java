@@ -1,6 +1,5 @@
 package cl.sonidovivo.auth.controller;
 
-import cl.sonidovivo.auth.dto.ComunaDto;
 import cl.sonidovivo.auth.dto.UbicacionDto;
 import cl.sonidovivo.auth.entity.Comuna;
 import cl.sonidovivo.auth.entity.Region;
@@ -33,14 +32,10 @@ public class UbicacionController {
                 .toList();
     }
 
-    /** Sin parámetro devuelve todas las comunas; con idRegion, solo las de esa región. */
     @GetMapping("/comunas")
-    public List<ComunaDto> comunas(@RequestParam(required = false) Long idRegion) {
-        List<Comuna> lista = idRegion == null
-                ? comunas.findAll(Sort.by("id"))
-                : comunas.findByIdRegionOrderByNombreAsc(idRegion);
-        return lista.stream()
-                .map((Comuna c) -> new ComunaDto(c.getId(), c.getIdRegion(), c.getNombre()))
+    public List<UbicacionDto> comunas(@RequestParam Long idRegion) {
+        return comunas.findByIdRegionOrderByNombreAsc(idRegion).stream()
+                .map((Comuna c) -> new UbicacionDto(c.getId(), c.getNombre()))
                 .toList();
     }
 }

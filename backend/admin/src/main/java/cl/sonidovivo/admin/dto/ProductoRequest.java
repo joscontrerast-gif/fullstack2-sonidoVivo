@@ -16,6 +16,7 @@ public record ProductoRequest(
         @Size(max = 50, message = "La marca admite hasta 50 caracteres") String marca,
         @Size(max = 50, message = "El modelo admite hasta 50 caracteres") String modelo,
         @Size(max = 500, message = "La descripción admite hasta 500 caracteres") String descripcion,
+        @Size(max = 500, message = "La imagen admite hasta 500 caracteres") String imagen,
         @NotNull(message = "El precio es obligatorio")
         @Min(value = 0, message = "El precio no puede ser negativo")
         @Max(value = 100000000, message = "El precio es demasiado alto") Integer precio,
