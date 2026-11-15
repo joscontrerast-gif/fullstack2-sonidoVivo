@@ -19,6 +19,7 @@ import Home from './pages/Home.jsx';
 import Nosotros from './pages/Nosotros.jsx';
 import Blogs from './pages/Blogs.jsx';
 import BlogDetalle from './pages/BlogDetalle.jsx';
+import Contacto from './pages/Contacto.jsx';
 
 function RutaAdmin({ children }) {
   const { autenticado, esAdmin } = useAuth();
@@ -245,6 +246,7 @@ function App() {
         <Route path="/nosotros" element={<Nosotros />} />
         <Route path="/blogs" element={<Blogs />} />
         <Route path="/blogs/:id" element={<BlogDetalle />} />
+        <Route path="/contacto" element={<Contacto />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route
