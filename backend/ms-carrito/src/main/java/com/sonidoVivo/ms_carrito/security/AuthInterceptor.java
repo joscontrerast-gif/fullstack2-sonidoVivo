@@ -29,6 +29,11 @@ public class AuthInterceptor implements HandlerInterceptor {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             return true; // preflight de CORS
         }
+        
+        String path = request.getRequestURI();
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.equals("/swagger-ui.html")) {
+            return true;
+        }
 
         String cabecera = request.getHeader("Authorization");
 

@@ -94,7 +94,10 @@ describe('Carrito de Sonido Vivo', () => {
 
     expect(screen.getAllByText('$2.150.000').length).toBe(2);
 
-    const cantidadTotal = screen.getByText('Productos').parentElement;
+    const etiquetaProductos = screen
+      .getAllByText('Productos')
+      .find((el) => el.tagName !== 'A');
+    const cantidadTotal = etiquetaProductos.parentElement;
     expect(cantidadTotal.textContent).toContain('3');
   });
 

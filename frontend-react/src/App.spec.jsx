@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   render,
@@ -35,7 +34,7 @@ const productosPrueba = [
 
 function renderizarAplicacion() {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/productos']}>
       <App />
     </MemoryRouter>
   );
@@ -45,6 +44,7 @@ describe('Catálogo de Sonido Vivo', () => {
   let fetchSpy;
 
   beforeEach(() => {
+    localStorage.clear();
     fetchSpy = spyOn(window, 'fetch').and.returnValue(
       Promise.resolve({
         ok: true,
@@ -55,6 +55,7 @@ describe('Catálogo de Sonido Vivo', () => {
 
   afterEach(() => {
     cleanup();
+    localStorage.clear();
   });
 
   it('muestra los productos después de cargarlos', async () => {

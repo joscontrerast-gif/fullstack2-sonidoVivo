@@ -48,6 +48,11 @@ public class AuthInterceptor implements HandlerInterceptor {
                 (uri.startsWith("/api/admin/productos") || uri.equals("/api/admin/categorias"))) {
             return true;
         }
+        
+        String path = request.getRequestURI();
+        if (path.startsWith("/swagger-ui") || path.startsWith("/v3/api-docs") || path.equals("/swagger-ui.html")) {
+            return true;
+        }       
 
         String cabecera = request.getHeader("Authorization");
         if (cabecera == null || !cabecera.startsWith("Bearer ")) {

@@ -71,7 +71,7 @@ const PRODUCTOS_PRUEBA = [
 
 const DATOS_VALIDOS = {
   codigo: 'tec001',
-  nombre: '  Teclado Casio  ',
+  nombre: '   Teclado Casio   ',
   marca: 'Casio',
   modelo: 'CT-S1',
   descripcion: '',
@@ -286,6 +286,7 @@ describe('Servicio administrativo', () => {
         precio: 250000,
         stock: 4,
         stockCritico: null,
+        imagen: '',
       });
     });
 
