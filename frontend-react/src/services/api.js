@@ -1,7 +1,7 @@
 export const URLS = {
-  auth: import.meta.env.VITE_AUTH_URL || 'http://localhost:8081',
-  admin: import.meta.env.VITE_ADMIN_URL || 'http://localhost:8082',
-  carrito: import.meta.env.VITE_CARRITO_URL || 'http://localhost:8083',
+  auth: import.meta.env.VITE_AUTH_URL ?? 'http://localhost:8081',
+  admin: import.meta.env.VITE_ADMIN_URL ?? 'http://localhost:8082',
+  carrito: import.meta.env.VITE_CARRITO_URL ?? 'http://localhost:8083',
 };
 
 const CLAVE_TOKEN = 'sonidovivo_token';
