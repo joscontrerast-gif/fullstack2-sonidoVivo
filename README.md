@@ -1,199 +1,187 @@
 # 🎸 Sonido Vivo Online
 
-Aplicación frontend de una tienda online de instrumentos y equipos musicales, desarrollada como parte de la asignatura **DSY1104 — Desarrollo FullStack II**. Esta versión corresponde a la segunda entrega académica: migración del flujo principal de compra a **React**, incorporación de pruebas unitarias con **Jasmine y Karma**, y documentación del alcance y de los resultados de testing.
-
-> **Alcance de esta entrega:** frontend React con catálogo basado en JSON y persistencia local del carrito. No se debe interpretar como una aplicación fullstack conectada a un backend o a una base de datos remota.
+Aplicación web **FullStack** de una tienda online de instrumentos y equipos musicales, desarrollada como proyecto final de la asignatura **DSY1104 — Desarrollo FullStack II**. Integra un frontend desarrollado en **React** con una arquitectura de **microservicios en Spring Boot**, persistencia en **Oracle Cloud Database** mediante Oracle Wallet, autenticación basada en **JWT**, documentación interactiva con **Swagger UI** y pruebas unitarias automatizadas en frontend y backend.
 
 ---
 
 ## 👥 Equipo de desarrollo
 
-| Integrante     | Responsabilidad principal del proyecto                                                                  |
-| -------------- | ------------------------------------------------------------------------------------------------------- |
-| Jose Contreras | Tienda principal: catálogo, búsqueda y filtros, detalle de producto, carrito y flujo de compra simulado |
-| Matias Peña    | Módulo administrativo y mantenedores                                                                    |
-| Sofia Caceres  | Vistas informativas, formularios y apoyo en estilos                                                     |
-
-La distribución corresponde a la organización de trabajo del equipo; las funciones disponibles pueden variar según el módulo y la versión integrada en esta entrega.
+| Integrante     | Responsabilidad principal del proyecto                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------- |
+| Jose Contreras | Tienda principal: catálogo, búsqueda y filtros, detalle de producto, carrito, checkout e integración API      |
+| Matias Peña    | Módulo administrativo, mantenedores de productos/encargos/personas y seguridad JWT                            |
+| Sofia Caceres  | Vistas informativas (Inicio, Nosotros, Blogs, Contacto), formularios y diseño responsivo                      |
 
 ---
 
-## 🧰 Tecnologías
+## 🏗️ Arquitectura y Tecnologías
 
-- **React**: construcción de la interfaz mediante componentes.
-- **Vite**: servidor de desarrollo y compilación para producción.
-- **React Router**: navegación entre vistas.
-- **Bootstrap**: estilos y utilidades de diseño responsivo, donde están aplicados en la interfaz.
-- **JavaScript**: lógica de la aplicación.
-- **JSON**: fuente local de datos para el catálogo.
-- **LocalStorage**: persistencia del carrito en el navegador.
-- **Jasmine**: definición de pruebas automatizadas.
-- **Karma**: ejecución de pruebas en navegador.
-- **Webpack**: empaquetado del entorno de pruebas.
-- **Chrome Headless**: navegador sin interfaz gráfica utilizado por Karma.
+### Frontend (`frontend-react/`)
+- **React & Vite**: interfaz modular basada en componentes y servidor de desarrollo/compilación rápida.
+- **React Router DOM**: enrutamiento público y protección de rutas administrativas por rol.
+- **Bootstrap 5**: diseño responsivo y componentes de interfaz.
+- **Fetch API & LocalStorage**: consumo de microservicios REST con envío de token Bearer JWT y respaldo local.
+- **Jasmine, Karma, Testing Library & Chrome Headless**: suite de pruebas unitarias e instrumentación de cobertura.
 
----
-
-## 🛍️ Funcionalidades del frontend
-
-### Catálogo
-
-- Obtención de productos desde el archivo JSON servido por la aplicación.
-- Visualización de los productos y de sus datos disponibles.
-- Búsqueda de productos.
-- Filtrado por categoría.
-- Manejo de estados de carga y errores de obtención de datos.
-
-### Detalle de producto
-
-- Visualización de información del producto seleccionado.
-- Validación de disponibilidad antes de agregarlo al carrito.
-
-### Carrito de compras
-
-- Agregar productos.
-- Cambiar cantidades.
-- Eliminar productos individuales o vaciar el carrito.
-- Validar cantidades y disponibilidad según los datos disponibles.
-- Conservar el carrito en `LocalStorage` al navegar entre vistas o recargar la página.
-
-La clave de almacenamiento utilizada por el carrito es `carritoSonidoVivo`.
-
-### Checkout
-
-- Cálculo del subtotal.
-- Selección de una opción de despacho y cálculo de su costo.
-- Validaciones del carrito antes de confirmar.
-- Simulación de la confirmación de compra.
-
-**Importante:** el checkout es una simulación académica. Esta versión no procesa pagos reales ni registra pedidos en un backend remoto.
+### Backend (`backend/`)
+- **Java & Spring Boot (4.1.2)**: arquitectura de 3 microservicios independientes con Maven Wrapper (`mvnw` / `mvnw.cmd`).
+  - **`inicioSesion`**: registro de usuarios, inicio de sesión, emisión y validación de tokens **JWT**, y creación automática de usuario administrador inicial.
+  - **`admin`**: gestión de catálogo de productos, control de stock crítico, administración de encargos y gestión de clientes/empleados.
+  - **`ms-carrito`**: gestión del carrito de compras y procesamiento de órdenes/checkout.
+- **Oracle Cloud Database (Autonomous DB)**: persistencia relacional conectada de forma segura mediante **Oracle Wallet** (`TNS_ADMIN`).
+- **SpringDoc OpenAPI (Swagger UI)**: documentación interactiva de endpoints REST con soporte de autenticación **Bearer JWT**.
 
 ---
 
-## 📁 Estructura relevante
+## 🛍️ Funcionalidades principales
 
-La aplicación React se encuentra dentro de `frontend-react/`. Entre los archivos principales se encuentran:
+### Tienda y experiencia de cliente
+- **Inicio (`/`)**: portada principal con accesos destacados y categorías.
+- **Catálogo (`/productos`)**: listado de productos con imágenes (`/img/productos/`), búsqueda en tiempo real (por nombre, marca, modelo o código) y filtro por categoría.
+- **Detalle de producto (`/productos/:codigo`)**: ficha técnica completa, visualización de stock disponible y validación antes de agregar al carrito.
+- **Carrito de compras (`/carrito`)**: ajuste de cantidades con validación de stock, eliminación de ítems, vaciado y cálculo de subtotales.
+- **Checkout (`/checkout`)**: selección de despacho, validación de disponibilidad y confirmación de compra (`/compra-exitosa` y `/compra-fallida`).
+- **Secciones informativas**: Nosotros (`/nosotros`), Blogs (`/blogs`, `/blogs/:id`) y Contacto (`/contacto`).
+
+### Autenticación y Panel Administrativo (`/admin`)
+- **Login (`/login`) y Registro (`/registro`)**: autenticación mediante JWT con control de acceso basado en roles (`ADMINISTRADOR` y `CLIENTE`).
+- **Dashboard (`/admin`)**: resumen general de métricas del negocio.
+- **Gestión de productos (`/admin/productos`)**: creación, edición, validación y eliminación de instrumentos con alerta visual de stock crítico.
+- **Gestión de encargos (`/admin/encargos`)**: seguimiento y administración de pedidos realizados.
+- **Gestión de personas (`/admin/clientes` y `/admin/empleados`)**: administración de cuentas registradas.
+
+---
+
+## 📁 Estructura del proyecto
 
 ```text
-frontend-react/
-├── public/
-│   └── data/
-│       └── productos.json
-├── src/
-│   ├── pages/
-│   │   ├── DetalleProducto.jsx
-│   │   ├── Carrito.jsx
-│   │   └── Checkout.jsx
-│   ├── services/
-│   │   ├── productos.js
-│   │   └── carrito.js
-│   ├── App.jsx
-│   └── main.jsx
-├── package.json
-└── ...
+fullstack2-sonidoVivo/
+├── backend/
+│   ├── inicioSesion/                 # Microservicio de autenticación y usuarios (JWT)
+│   ├── admin/                        # Microservicio de catálogo, inventario y administración
+│   └── ms-carrito/                   # Microservicio de carrito y procesamiento de compras
+├── frontend-react/
+│   ├── public/
+│   │   ├── data/
+│   │   │   └── productos.json        # Respaldo de datos iniciales del catálogo
+│   │   └── img/
+│   │       └── productos/            # Imágenes estáticas del catálogo
+│   ├── src/
+│   │   ├── components/               # Componentes compartidos (Navbar, etc.)
+│   │   ├── context/                  # AuthContext para manejo de sesión y roles JWT
+│   │   ├── data/                     # Capa de acceso y utilidades de datos
+│   │   ├── modules/
+│   │   │   ├── admin/                # Páginas, componentes, servicios y tests del panel admin
+│   │   │   └── compra/               # Flujo de compra exitosa/fallida y servicios
+│   │   ├── pages/                    # Vistas públicas (Home, DetalleProducto, Carrito, Checkout, Login, etc.)
+│   │   ├── services/                 # Clientes API (api.js, auth.js, productos.js, carrito.js)
+│   │   ├── App.jsx                   # Definición de rutas y componente Catálogo
+│   │   └── main.jsx                  # Punto de entrada de React
+│   ├── karma.conf.cjs                # Configuración de Karma y cobertura
+│   └── package.json
+└── README.md
 ```
-
-La estructura anterior muestra los archivos principales relevantes para el flujo de compra; pueden existir otros componentes, estilos y archivos de prueba en el proyecto.
 
 ---
 
 ## ⚙️ Requisitos previos
 
-- Node.js y npm instalados.
-- Un navegador moderno, por ejemplo Google Chrome.
-- Git, si se desea clonar el repositorio.
-
-Para comprobar la instalación:
-
-```bash
-node --version
-npm --version
-```
+- **Java JDK 17 o superior** (para ejecutar los microservicios Spring Boot).
+- **Node.js y npm** (para ejecutar y compilar el frontend React).
+- **Oracle Wallet** configurada en el entorno (`TNS_ADMIN`) para la conexión a Oracle Cloud Database.
+- **Google Chrome** instalado (requerido por Karma / Chrome Headless para ejecutar las pruebas del frontend).
 
 ---
 
 ## 🚀 Instalación y ejecución
 
-Desde una terminal, entrar a la carpeta de la aplicación React:
+### 1. Ejecutar los microservicios Backend
+
+Abre una terminal por cada microservicio (o ejecútalos secuencialmente) desde la raíz del proyecto:
+
+```bash
+# Microservicio de Autenticación (inicioSesion)
+cd backend/inicioSesion
+./mvnw spring-boot:run
+
+# Microservicio Administrativo (admin)
+cd backend/admin
+./mvnw spring-boot:run
+
+# Microservicio de Carrito (ms-carrito)
+cd backend/ms-carrito
+./mvnw spring-boot:run
+```
+
+*(En Windows PowerShell, utilizar `.\mvnw.cmd spring-boot:run`).*
+
+#### Documentación Swagger UI y credenciales de prueba
+Una vez levantados los servicios, cada microservicio expone su interfaz **Swagger UI** en `/swagger-ui.html` (por ejemplo, `http://localhost:8081/swagger-ui.html`, `http://localhost:8082/swagger-ui.html` y `http://localhost:8083/swagger-ui.html`).
+
+- **Usuario Administrador por defecto:** `admin@sonidovivo.cl`
+- **Contraseña:** `Admin1234`
+- **Rol:** `ADMINISTRADOR`
+
+Para probar endpoints protegidos en Swagger UI, inicia sesión en `inicioSesion`, copia el `token` JWT devuelto y ingrésalo en el botón **Authorize** de Swagger.
+
+---
+
+### 2. Ejecutar el Frontend React
+
+En una nueva terminal, ingresa a `frontend-react/`:
 
 ```bash
 cd frontend-react
-```
-
-Instalar las dependencias:
-
-```bash
 npm install
-```
-
-Iniciar el servidor de desarrollo:
-
-```bash
 npm run dev
 ```
 
-Vite mostrará en la terminal la dirección local para abrir la aplicación en el navegador. Usualmente es `http://localhost:5173/`, pero se debe utilizar la URL exacta que indique la terminal.
+Abre en el navegador la URL local indicada por Vite (habitualmente `http://localhost:5173/`).
 
-### Compilar para producción
+#### Compilar para producción
 
 ```bash
 npm run build
 ```
 
-Vite generará los archivos de producción en la carpeta `dist/`.
+Genera los archivos optimizados para despliegue en `frontend-react/dist/`.
 
 ---
 
-## 🧪 Pruebas unitarias
+## 🧪 Pruebas unitarias y cobertura
 
-Las pruebas se ejecutan mediante Jasmine y Karma. Desde `frontend-react/`, ejecutar:
+### Frontend (Jasmine + Karma)
+
+Desde `frontend-react/`, ejecutar:
 
 ```bash
 npm test
 ```
 
-La última ejecución reportada por el equipo fue:
+Resultados obtenidos en la suite completa del frontend:
 
 | Indicador                 | Resultado reportado |
 | ------------------------- | ------------------: |
-| Pruebas aprobadas         |            47 de 47 |
+| Pruebas aprobadas         |          291 de 291 |
 | Pruebas fallidas          |                   0 |
-| Sentencias instrumentadas |        100% (40/40) |
-| Ramas instrumentadas      |        100% (22/22) |
-| Funciones instrumentadas  |        100% (10/10) |
-| Líneas instrumentadas     |        100% (40/40) |
+| Sentencias instrumentadas |     100% (456/456)  |
+| Ramas instrumentadas      |     100% (431/431)  |
+| Funciones instrumentadas  |     100% (107/107)  |
+| Líneas instrumentadas     |     100% (437/437)  |
 
-Las suites reportadas incluyen pruebas para `App`, `DetalleProducto`, `Carrito`, `Checkout` y servicios.
+La suite cubre tanto los componentes y flujos de interfaz (`App`, `DetalleProducto`, `Carrito`, `Checkout`, `PanelAdmin`, `TablaProductos`, `FormularioProducto`, entre otros) como el **100% de los servicios instrumentados** (`adminService.js`, `encargosService.js`, `personasService.js`, `validaciones.js`, `compraService.js`, `api.js`, `auth.js`, `carrito.js` y `productos.js`).
 
-> **Nota sobre cobertura:** los porcentajes anteriores corresponden al código JavaScript de servicios incluido en la instrumentación de cobertura (`src/services/**/*.js`). No significan que el 100% de todos los componentes, páginas y archivos del frontend esté cubierto. Consultar el informe de cobertura de pruebas para conocer el alcance y las limitaciones de la medición.
+### Backend (JUnit / Maven)
 
-La última ejecución compartida también indicó que `npm run build` finalizó correctamente. Los resultados pueden variar si el código o las dependencias cambian; se recomienda ejecutar ambos comandos antes de entregar.
+Para ejecutar las pruebas unitarias de los tres microservicios Spring Boot:
 
----
+```bash
+cd backend/inicioSesion && ./mvnw test
+cd ../admin && ./mvnw test
+cd ../ms-carrito && ./mvnw test
+```
 
-## 📌 Alcance y limitaciones conocidas
-
-Esta entrega se concentra en el frontend del flujo de compra. Los siguientes elementos no deben considerarse implementados por el solo hecho de estar descritos en el proyecto general:
-
-- Backend Spring Boot o servicios REST conectados.
-- Base de datos remota MySQL u otra base centralizada.
-- Autenticación real y autorización segura por roles.
-- Sincronización de inventario entre usuarios o dispositivos.
-- Registro persistente de pedidos en un servidor.
-- Procesamiento de pagos reales.
-
-El catálogo utiliza datos locales y el carrito se almacena en el navegador. Por ello, el estado no se sincroniza automáticamente entre distintos dispositivos o navegadores.
-
----
-
-## 📄 Documentación de la entrega
-
-Junto al código fuente, la entrega académica contempla:
-
-- **ERS actualizado:** especificación de requisitos ajustada al alcance de esta versión.
-- **Informe de cobertura de pruebas:** alcance, resultados y limitaciones de la medición.
-- **Repositorio público de GitHub:** código frontend actualizado.
-- **Proyecto frontend comprimido:** versión actualizada de la carpeta del proyecto.
+*(En Windows PowerShell, utilizar `.\mvnw.cmd test`).*
 
 ---
 
@@ -202,4 +190,4 @@ Junto al código fuente, la entrega académica contempla:
 Desarrollado para **DSY1104 — Desarrollo FullStack II**, Escuela de Informática y Telecomunicaciones.
 
 **Proyecto:** Sonido Vivo Online  
-**Entrega:** Frontend React y pruebas unitarias
+**Entrega:** Aplicación FullStack (React + Microservicios Spring Boot + Oracle Cloud + JWT + Testing)
