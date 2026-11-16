@@ -303,12 +303,19 @@ describe('Cobertura completa de servicios y ramas API', () => {
       fetchSpy.and.returnValue(crearRespuesta({ body: [] }));
       expect(await eliminarDelCarritoApi('GTR001')).toEqual([]);
 
-      fetchSpy.and.returnValue(crearRespuesta({ status: 204 }));
+      fetchSpy.and.returnValue(
+        crearRespuesta({
+          status: 201,
+          body: { numeroOrden: 'ORD-010', costoEntrega: 1990, total: 2990 },
+        })
+      );
       const compraApi = await confirmarCompra(
         [{ codigo: 'GTR001', nombre: 'Guitarra', precio: 1000, cantidad: 1, stock: 5 }],
         { direccion: 'Av. Libertad 123', comuna: 'Viña del Mar', entrega: 'desconocida' }
       );
       expect(compraApi.ok).toBeTrue();
+      expect(compraApi.resumen.numeroOrden).toBe('ORD-010');
+      expect(compraApi.resumen.total).toBe(2990);
 
       expect(formatoPrecio(null)).toContain('0');
       expect(obtenerCostoEntrega('otro')).toBe(1990);

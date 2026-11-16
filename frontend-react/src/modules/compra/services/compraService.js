@@ -1,5 +1,5 @@
 import { obtenerToken } from '../../../services/api.js';
-import { vaciarCarrito, vaciarCarritoApi } from '../../../services/carrito.js';
+import { confirmarCompraApi, vaciarCarrito } from '../../../services/carrito.js';
 
 export const COSTOS_ENTREGA = {
   estandar: 1990,
@@ -116,11 +116,26 @@ export function confirmarCompra(productos, datos) {
     return { ok: true, exito: true, mensaje: '', errores: {}, resumen };
   }
 
-  return vaciarCarritoApi().then(() => ({
-    ok: true,
-    exito: true,
-    mensaje: '',
-    errores: {},
-    resumen,
-  }));
+  // Con sesión iniciada el encargo se registra en la base de datos (y aparece en el panel).
+  return confirmarCompraApi(datos).then(
+    (comprobante) => ({
+      ok: true,
+      exito: true,
+      mensaje: '',
+      errores: {},
+      resumen: {
+        ...resumen,
+        numeroOrden: comprobante?.numeroOrden ?? null,
+        costoEntrega: comprobante?.costoEntrega ?? resumen.costoEntrega,
+        total: comprobante?.total ?? resumen.total,
+      },
+    }),
+    (error) => ({
+      ok: false,
+      exito: false,
+      mensaje: error.message || 'No se pudo registrar la compra.',
+      errores: {},
+      resumen: null,
+    })
+  );
 }

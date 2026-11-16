@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { obtenerProductos } from '../services/productos.js';
 import { obtenerCarritoApi } from '../services/carrito.js';
+import { obtenerToken } from '../services/api.js';
 import Navbar from '../components/Navbar.jsx';
 import FormularioCheckout from '../modules/compra/components/FormularioCheckout.jsx';
 import ResumenCompra from '../modules/compra/components/ResumenCompra.jsx';
@@ -102,6 +103,14 @@ function Checkout() {
 
       <main className="container py-4">
         <h1 className="mb-4">Finalizar compra</h1>
+
+        {!obtenerToken() && (
+          <div className="alert alert-info" role="status">
+            Estás comprando como invitado: la compra se simula y no queda
+            registrada. <Link to="/login">Inicia sesión</Link> para guardar tu
+            pedido.
+          </div>
+        )}
 
         {error && (
           <div className="alert alert-danger" role="alert">

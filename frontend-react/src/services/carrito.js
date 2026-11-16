@@ -157,6 +157,17 @@ export async function eliminarDelCarritoApi(codigo) {
   return carrito;
 }
 
+// Confirma la compra en el servidor: crea el encargo en la base de datos, descuenta el stock y
+// vacía el carrito. Devuelve el comprobante (numeroOrden, total, productos...).
+export async function confirmarCompraApi({ direccion, comuna, entrega }) {
+  const comprobante = await apiFetch(URLS.carrito, '/api/carrito/checkout', {
+    method: 'POST',
+    body: JSON.stringify({ direccion, comuna, entrega }),
+  });
+  notificarCarrito([]);
+  return comprobante;
+}
+
 export async function vaciarCarritoApi() {
   if (!obtenerToken()) {
     vaciarCarrito();

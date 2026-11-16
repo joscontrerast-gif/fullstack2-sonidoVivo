@@ -31,9 +31,17 @@ function CompraExitosa() {
       <main className="container py-4">
         <div className="alert alert-success" role="status">
           <h1 className="h3">¡Compra confirmada!</h1>
-          <p className="mb-0">
-            La compra se ha registrado como una simulación.
-          </p>
+          {compra.numeroOrden ? (
+            <p className="mb-0">
+              Tu pedido <strong>{compra.numeroOrden}</strong> quedó registrado y
+              está pendiente de preparación.
+            </p>
+          ) : (
+            <p className="mb-0">
+              La compra se ha registrado como una simulación. Inicia sesión para
+              que tus próximas compras queden registradas en tu cuenta.
+            </p>
+          )}
         </div>
 
         <div className="row g-4">

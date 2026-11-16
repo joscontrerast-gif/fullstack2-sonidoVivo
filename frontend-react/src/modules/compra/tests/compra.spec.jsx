@@ -8,7 +8,9 @@ import {
   validarDatosEnvio,
   validarCarrito,
   confirmarCompra,
+  construirResumen,
 } from '../services/compraService.js';
+import { guardarSesion } from '../../../services/api.js';
 import FormularioCheckout from '../components/FormularioCheckout.jsx';
 import ResumenCompra from '../components/ResumenCompra.jsx';
 import CompraExitosa from '../pages/CompraExitosa.jsx';
@@ -167,5 +169,89 @@ describe('Páginas de resultado de compra', () => {
 
     expect(screen.getByText('Pago rechazado.')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Volver al carrito' }).getAttribute('href')).toBe('/carrito');
+  });
+});
+
+describe('Compra con sesión iniciada (encargo en la base de datos)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    guardarSesion('token-cliente', { id: 7, nombre: 'María' });
+  });
+
+  it('registra el encargo en el servidor y devuelve el número de orden', async () => {
+    const fetchSpy = spyOn(window, 'fetch').and.resolveTo({
+      ok: true,
+      status: 201,
+      text: async () =>
+        JSON.stringify({ numeroOrden: 'ORD-007', costoEntrega: 4990, total: 1312990 }),
+    });
+
+    const resultado = await confirmarCompra(productosPrueba, datosValidos);
+
+    expect(resultado.exito).toBeTrue();
+    expect(resultado.resumen.numeroOrden).toBe('ORD-007');
+    expect(resultado.resumen.total).toBe(1312990);
+
+    const [url, opciones] = fetchSpy.calls.mostRecent().args;
+
+    expect(url).toContain('/api/carrito/checkout');
+    expect(opciones.method).toBe('POST');
+    expect(JSON.parse(opciones.body)).toEqual(datosValidos);
+    expect(opciones.headers.Authorization).toBe('Bearer token-cliente');
+  });
+
+  it('informa el motivo si el servidor rechaza la compra', async () => {
+    spyOn(window, 'fetch').and.resolveTo({
+      ok: false,
+      status: 409,
+      text: async () => JSON.stringify({ mensaje: 'No hay stock suficiente de Guitarra.' }),
+    });
+
+    const resultado = await confirmarCompra(productosPrueba, datosValidos);
+
+    expect(resultado.exito).toBeFalse();
+    expect(resultado.mensaje).toBe('No hay stock suficiente de Guitarra.');
+    expect(resultado.resumen).toBeNull();
+  });
+
+  it('no llama al servidor si los datos de envío son inválidos', async () => {
+    const fetchSpy = spyOn(window, 'fetch');
+
+    const resultado = await confirmarCompra(productosPrueba, {
+      direccion: '',
+      comuna: '',
+      entrega: 'estandar',
+    });
+
+    expect(resultado.exito).toBeFalse();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('CompraExitosa muestra el número de pedido registrado', () => {
+    const compra = {
+      ...construirResumen(productosPrueba, datosValidos),
+      numeroOrden: 'ORD-007',
+    };
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/compra-exitosa', state: { compra } }]}>
+        <CompraExitosa />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('ORD-007')).toBeTruthy();
+    expect(screen.queryByText(/como una simulación/)).toBeNull();
+  });
+
+  it('CompraExitosa avisa que es una simulación si no hay número de pedido', () => {
+    const compra = construirResumen(productosPrueba, datosValidos);
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/compra-exitosa', state: { compra } }]}>
+        <CompraExitosa />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText(/como una simulación/)).toBeTruthy();
   });
 });

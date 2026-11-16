@@ -1,10 +1,13 @@
 package com.sonidoVivo.ms_carrito.controller;
 
 import com.sonidoVivo.ms_carrito.dto.CantidadRequest;
+import com.sonidoVivo.ms_carrito.dto.CompraRequest;
+import com.sonidoVivo.ms_carrito.dto.CompraResponse;
 import com.sonidoVivo.ms_carrito.dto.ItemRequest;
 import com.sonidoVivo.ms_carrito.dto.ItemResponse;
 import com.sonidoVivo.ms_carrito.security.AuthInterceptor;
 import com.sonidoVivo.ms_carrito.service.CarritoService;
+import com.sonidoVivo.ms_carrito.service.CompraService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,9 +19,11 @@ import java.util.List;
 public class CarritoController {
 
     private final CarritoService servicio;
+    private final CompraService compraServicio;
 
-    public CarritoController(CarritoService servicio) {
+    public CarritoController(CarritoService servicio, CompraService compraServicio) {
         this.servicio = servicio;
+        this.compraServicio = compraServicio;
     }
 
     @GetMapping
@@ -55,5 +60,14 @@ public class CarritoController {
     public void vaciar(
             @RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Long usuarioId) {
         servicio.vaciar(usuarioId);
+    }
+
+    // Confirma la compra: registra el encargo en la base de datos, descuenta el stock y vacía el carrito.
+    @PostMapping("/checkout")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CompraResponse confirmarCompra(
+            @RequestAttribute(AuthInterceptor.ATRIBUTO_USUARIO) Long usuarioId,
+            @Valid @RequestBody CompraRequest cuerpo) {
+        return compraServicio.confirmar(usuarioId, cuerpo);
     }
 }
