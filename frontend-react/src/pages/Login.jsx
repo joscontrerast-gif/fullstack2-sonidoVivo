@@ -21,6 +21,8 @@ function Login() {
       const res = await login(correo.trim(), password);
       if (res.usuario?.rol === 'ADMINISTRADOR') {
         navigate('/admin');
+      } else if (res.usuario?.rol === 'VENDEDOR') {
+        navigate('/admin/productos');
       } else {
         navigate('/');
       }

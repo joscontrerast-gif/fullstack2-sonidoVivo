@@ -1,9 +1,10 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext.jsx';
 
 const ENLACES = [
   { to: '/admin', etiqueta: 'Dashboard', exacto: true },
-  { to: '/admin/productos', etiqueta: 'Productos' },
-  { to: '/admin/encargos', etiqueta: 'Encargos' },
+  { to: '/admin/productos', etiqueta: 'Productos', vendedor: true },
+  { to: '/admin/encargos', etiqueta: 'Encargos', vendedor: true },
   { to: '/admin/clientes', etiqueta: 'Clientes' },
   { to: '/admin/empleados', etiqueta: 'Empleados' },
 ];
@@ -11,6 +12,10 @@ const ENLACES = [
 // Estructura común de todas las vistas administrativas: barra superior,
 // menú lateral y, a la derecha, la vista activa (<Outlet />).
 function LayoutAdmin() {
+  const { esVendedor } = useAuth();
+  // El vendedor solo ve Productos y Encargos; el resto del menú es del administrador.
+  const enlaces = esVendedor ? ENLACES.filter((e) => e.vendedor) : ENLACES;
+
   return (
     <>
       <nav className="navbar navbar-dark bg-dark">
@@ -32,7 +37,7 @@ function LayoutAdmin() {
               aria-label="Menú de administración"
               className="nav nav-pills flex-md-column gap-1"
             >
-              {ENLACES.map((enlace) => (
+              {enlaces.map((enlace) => (
                 <NavLink
                   key={enlace.to}
                   to={enlace.to}

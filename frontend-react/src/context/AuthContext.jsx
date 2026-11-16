@@ -28,6 +28,7 @@ export function AuthProvider({ children }) {
   }
 
   const esAdmin = usuario?.rol === 'ADMINISTRADOR';
+  const esVendedor = usuario?.rol === 'VENDEDOR';
 
   return (
     <AuthContext.Provider
@@ -36,6 +37,7 @@ export function AuthProvider({ children }) {
         usuario,
         autenticado: Boolean(token && usuario),
         esAdmin,
+        esVendedor,
         login,
         logout,
       }}
@@ -49,6 +51,7 @@ const AUTH_POR_DEFECTO = {
   usuario: null,
   autenticado: false,
   esAdmin: false,
+  esVendedor: false,
   esEmpleado: false,
   iniciarSesion: async () => {},
   registrarUsuario: async () => {},

@@ -16,8 +16,9 @@ import jakarta.servlet.http.HttpServletResponse;
  * Protege /api/admin/**:
  * - Permite consultas GET públicas al catálogo de productos y categorías.
  * - Exige un JWT válido de auth-service para el resto de operaciones.
- * - ADMINISTRADOR y VENDEDOR pueden usar productos, encargos y dashboard.
- * - Solo ADMINISTRADOR puede gestionar usuarios (clientes y empleados).
+ * - ADMINISTRADOR tiene acceso completo: productos, encargos, dashboard y usuarios.
+ * - VENDEDOR gestiona productos (crear, editar, eliminar, precio, stock y stock crítico) y consulta
+ *   y cambia el estado de los encargos. No accede al dashboard ni a la gestión de usuarios.
  */
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
@@ -70,6 +71,9 @@ public class AuthInterceptor implements HandlerInterceptor {
         }
         if (uri.startsWith("/api/admin/usuarios") && !"ADMINISTRADOR".equals(rol)) {
             return rechazar(response, 403, "Solo un administrador puede gestionar usuarios");
+        }
+        if ("VENDEDOR".equals(rol) && uri.startsWith("/api/admin/dashboard")) {
+            return rechazar(response, 403, "Solo un administrador puede ver el dashboard");
         }
         request.setAttribute(ATTR_USUARIO_ID, Long.valueOf(claims.getSubject()));
         request.setAttribute(ATTR_ROL, rol);

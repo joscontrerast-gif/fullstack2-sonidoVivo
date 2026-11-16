@@ -9,7 +9,7 @@ import {
 } from '../services/carrito.js';
 
 function Navbar({ mostrarCarrito = true, enlaceExtra = null }) {
-  const { autenticado, usuario, esAdmin, logout } = useAuth();
+  const { autenticado, usuario, esAdmin, esVendedor, logout } = useAuth();
   const navigate = useNavigate();
   const [cantidadCarrito, setCantidadCarrito] = useState(() =>
     contarItemsCarrito(obtenerCarrito())
@@ -77,9 +77,12 @@ function Navbar({ mostrarCarrito = true, enlaceExtra = null }) {
         </div>
 
         <div className="d-flex align-items-center flex-wrap gap-2">
-          {esAdmin && (
-            <Link to="/admin" className="btn btn-warning btn-sm fw-semibold">
-              Panel Admin
+          {(esAdmin || esVendedor) && (
+            <Link
+              to={esAdmin ? '/admin' : '/admin/productos'}
+              className="btn btn-warning btn-sm fw-semibold"
+            >
+              {esAdmin ? 'Panel Admin' : 'Panel Vendedor'}
             </Link>
           )}
 

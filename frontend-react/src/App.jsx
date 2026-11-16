@@ -22,9 +22,17 @@ import Blogs from './pages/Blogs.jsx';
 import BlogDetalle from './pages/BlogDetalle.jsx';
 import Contacto from './pages/Contacto.jsx';
 
+// Panel: lo pueden abrir el administrador y el vendedor (el resto vuelve al inicio).
 function RutaAdmin({ children }) {
-  const { autenticado, esAdmin } = useAuth();
-  if (autenticado && !esAdmin) return <Navigate to="/" replace />;
+  const { autenticado, esAdmin, esVendedor } = useAuth();
+  if (autenticado && !esAdmin && !esVendedor) return <Navigate to="/" replace />;
+  return children;
+}
+
+// Secciones exclusivas del administrador: el vendedor vuelve a Productos.
+function RutaSoloAdmin({ children }) {
+  const { esVendedor } = useAuth();
+  if (esVendedor) return <Navigate to="/admin/productos" replace />;
   return children;
 }
 
@@ -264,16 +272,31 @@ function App() {
             </RutaAdmin>
           }
         >
-          <Route index element={<DashboardAdmin />} />
+          <Route
+            index
+            element={
+              <RutaSoloAdmin>
+                <DashboardAdmin />
+              </RutaSoloAdmin>
+            }
+          />
           <Route path="productos" element={<PanelAdmin />} />
           <Route path="encargos" element={<EncargosAdmin />} />
           <Route
             path="clientes"
-            element={<PersonasAdmin key="cliente" tipo="cliente" />}
+            element={
+              <RutaSoloAdmin>
+                <PersonasAdmin key="cliente" tipo="cliente" />
+              </RutaSoloAdmin>
+            }
           />
           <Route
             path="empleados"
-            element={<PersonasAdmin key="empleado" tipo="empleado" />}
+            element={
+              <RutaSoloAdmin>
+                <PersonasAdmin key="empleado" tipo="empleado" />
+              </RutaSoloAdmin>
+            }
           />
         </Route>
         <Route path="/checkout" element={<Checkout />} />
