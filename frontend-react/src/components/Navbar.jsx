@@ -100,6 +100,9 @@ function Navbar({ mostrarCarrito = true, enlaceExtra = null }) {
 
           {autenticado ? (
             <>
+              <Link to="/mis-encargos" className="btn btn-outline-light btn-sm">
+                Mis encargos
+              </Link>
               <span className="navbar-text text-light small mx-1">
                 Hola, <strong>{usuario.nombre}</strong>
               </span>

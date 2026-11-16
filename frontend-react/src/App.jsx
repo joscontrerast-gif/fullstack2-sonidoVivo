@@ -8,6 +8,7 @@ import Registro from './pages/Registro.jsx';
 import DetalleProducto from './pages/DetalleProducto.jsx';
 import Carrito from './pages/Carrito.jsx';
 import Checkout from './pages/Checkout.jsx';
+import MisEncargos from './pages/MisEncargos.jsx';
 import LayoutAdmin from './modules/admin/components/LayoutAdmin.jsx';
 import DashboardAdmin from './modules/admin/pages/DashboardAdmin.jsx';
 import PanelAdmin from './modules/admin/pages/PanelAdmin.jsx';
@@ -254,6 +255,7 @@ function App() {
           element={<DetalleProducto />}
         />
         <Route path="/carrito" element={<Carrito />} />
+        <Route path="/mis-encargos" element={<MisEncargos />} />
         <Route
           path="/admin"
           element={

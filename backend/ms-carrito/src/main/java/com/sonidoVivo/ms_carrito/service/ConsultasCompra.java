@@ -31,6 +31,14 @@ public class ConsultasCompra {
         return ids.get(0);
     }
 
+    // Nombre de la comuna de un encargo ya registrado (null si no tiene o no existe).
+    public String nombreComuna(Long idComuna) {
+        if (idComuna == null) return null;
+        List<String> nombres = jdbc.queryForList(
+                "SELECT nombre FROM comunas WHERE id_comuna = ?", String.class, idComuna);
+        return nombres.isEmpty() ? null : nombres.get(0);
+    }
+
     // Nombre completo y correo del cliente tal como están al momento de comprar.
     public Cliente buscarCliente(Long usuarioId) {
         List<Map<String, Object>> filas = jdbc.queryForList(
