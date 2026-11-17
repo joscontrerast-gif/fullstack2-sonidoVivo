@@ -43,8 +43,9 @@ public class MigracionImagenesConfig {
         boolean huboCambios = false;
 
         for (Producto p : todos) {
-            if (p.getImagen() == null || p.getImagen().isBlank()) {
-                p.setImagen("/img/productos/" + p.getCodigo() + ".svg");
+            String imagen = p.getImagen();
+            if (imagen == null || imagen.isBlank() || imagen.endsWith(".svg")) {
+                p.setImagen("/img/productos/" + p.getCodigo() + ".jpg");
                 huboCambios = true;
             }
         }
