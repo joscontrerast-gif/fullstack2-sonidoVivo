@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext.jsx';
 
 const ENLACES = [
@@ -9,24 +9,39 @@ const ENLACES = [
   { to: '/admin/empleados', etiqueta: 'Empleados' },
 ];
 
-// Estructura común de todas las vistas administrativas: barra superior,
-// menú lateral y, a la derecha, la vista activa (<Outlet />).
 function LayoutAdmin() {
-  const { esVendedor } = useAuth();
-  // El vendedor solo ve Productos y Encargos; el resto del menú es del administrador.
-  const enlaces = esVendedor ? ENLACES.filter((e) => e.vendedor) : ENLACES;
+  const { esAdmin, esVendedor, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const enlaces = esAdmin ? ENLACES : ENLACES.filter((e) => e.vendedor);
+
+  function manejarLogout() {
+    logout();
+    navigate('/login');
+  }
 
   return (
     <>
       <nav className="navbar navbar-dark bg-dark">
         <div className="container-fluid">
           <span className="navbar-brand fw-bold">
-            Sonido Vivo · Administración
+            Sonido Vivo · {esVendedor ? 'Panel Vendedor' : 'Administración'}
           </span>
 
-          <Link to="/" className="btn btn-outline-light btn-sm">
-            Ir a la tienda
-          </Link>
+          <div className="d-flex align-items-center gap-2">
+            {!esVendedor && (
+              <Link to="/" className="btn btn-outline-light btn-sm">
+                Ir a la tienda
+              </Link>
+            )}
+            <button
+              type="button"
+              className="btn btn-outline-danger btn-sm"
+              onClick={manejarLogout}
+            >
+              Cerrar sesión
+            </button>
+          </div>
         </div>
       </nav>
 

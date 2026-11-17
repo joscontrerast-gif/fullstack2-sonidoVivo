@@ -27,8 +27,9 @@ export function AuthProvider({ children }) {
     setUsuario(null);
   }
 
-  const esAdmin = usuario?.rol === 'ADMINISTRADOR';
-  const esVendedor = usuario?.rol === 'VENDEDOR';
+const rolNormalizado = String(usuario?.rol || '').trim().toUpperCase();
+  const esAdmin = rolNormalizado === 'ADMINISTRADOR' || rolNormalizado === 'ROLE_ADMINISTRADOR';
+  const esVendedor = rolNormalizado === 'VENDEDOR' || rolNormalizado === 'ROLE_VENDEDOR';
 
   return (
     <AuthContext.Provider

@@ -22,15 +22,23 @@ import Blogs from './pages/Blogs.jsx';
 import BlogDetalle from './pages/BlogDetalle.jsx';
 import Contacto from './pages/Contacto.jsx';
 
-// Panel: lo pueden abrir el administrador y el vendedor (el resto vuelve al inicio).
+// 1. Solo entran usuarios autenticados con rol ADMINISTRADOR o VENDEDOR
 function RutaAdmin({ children }) {
   const { autenticado, esAdmin, esVendedor } = useAuth();
-  if (autenticado && !esAdmin && !esVendedor) return <Navigate to="/" replace />;
+  if (!autenticado) return <Navigate to="/login" replace />;
+  if (!esAdmin && !esVendedor) return <Navigate to="/" replace />;
   return children;
 }
 
-// Secciones exclusivas del administrador: el vendedor vuelve a Productos.
+// 2. Solo entra ADMINISTRADOR; cualquier otro (ej. VENDEDOR) va a Productos
 function RutaSoloAdmin({ children }) {
+  const { esAdmin } = useAuth();
+  if (!esAdmin) return <Navigate to="/admin/productos" replace />;
+  return children;
+}
+
+// 3. Bloquea la tienda pública para el vendedor y lo envía directo a Productos
+function RutaTienda({ children }) {
   const { esVendedor } = useAuth();
   if (esVendedor) return <Navigate to="/admin/productos" replace />;
   return children;
@@ -250,20 +258,20 @@ function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/productos" element={<Catalogo />} />
-        <Route path="/nosotros" element={<Nosotros />} />
-        <Route path="/blogs" element={<Blogs />} />
-        <Route path="/blogs/:id" element={<BlogDetalle />} />
-        <Route path="/contacto" element={<Contacto />} />
+        <Route path="/" element={<RutaTienda><Home /></RutaTienda>} />
+        <Route path="/productos" element={<RutaTienda><Catalogo /></RutaTienda>} />
+        <Route path="/nosotros" element={<RutaTienda><Nosotros /></RutaTienda>} />
+        <Route path="/blogs" element={<RutaTienda><Blogs /></RutaTienda>} />
+        <Route path="/blogs/:id" element={<RutaTienda><BlogDetalle /></RutaTienda>} />
+        <Route path="/contacto" element={<RutaTienda><Contacto /></RutaTienda>} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route
           path="/productos/:codigo"
-          element={<DetalleProducto />}
+          element={<RutaTienda><DetalleProducto /></RutaTienda>}
         />
-        <Route path="/carrito" element={<Carrito />} />
-        <Route path="/mis-encargos" element={<MisEncargos />} />
+        <Route path="/carrito" element={<RutaTienda><Carrito /></RutaTienda>} />
+        <Route path="/mis-encargos" element={<RutaTienda><MisEncargos /></RutaTienda>} />
         <Route
           path="/admin"
           element={
@@ -298,10 +306,11 @@ function App() {
               </RutaSoloAdmin>
             }
           />
+          <Route path="*" element={<Navigate to="/admin/productos" replace />} />
         </Route>
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/compra-exitosa" element={<CompraExitosa />} />
-        <Route path="/compra-fallida" element={<CompraFallida />} />
+        <Route path="/checkout" element={<RutaTienda><Checkout /></RutaTienda>} />
+        <Route path="/compra-exitosa" element={<RutaTienda><CompraExitosa /></RutaTienda>} />
+        <Route path="/compra-fallida" element={<RutaTienda><CompraFallida /></RutaTienda>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
